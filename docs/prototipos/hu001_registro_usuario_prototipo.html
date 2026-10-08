@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>HU-001 · Registro de usuario — Prototipo</title>
+<style>
+  :root{
+    --mint:#b8f0d0;
+    --green:#2f9e6b;
+    --peach:#f9cfa6;
+    --peach-dark:#f0b27a;
+    --orange:#f5a65b;
+    --ink:#1f2430;
+    --muted:#8b93a1;
+    --line:#d3d7de;
+    --red:#e03e3e;
+    --bezel:#e5e5ee;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    padding:28px 20px 40px;
+    background:
+      linear-gradient(90deg, rgba(0,0,0,.035) 1px, transparent 1px) 0 0/28px 28px,
+      linear-gradient(0deg, rgba(0,0,0,.035) 1px, transparent 1px) 0 0/28px 28px,
+      #f4f4f6;
+    font-family:'Segoe UI', Arial, sans-serif;
+    color:var(--ink);
+    overflow-x:auto;
+  }
+  h1{margin:0 0 4px;font-size:18px;font-weight:800;text-align:center;}
+  .sub{margin:0 0 18px;font-size:12.5px;color:var(--muted);text-align:center;}
+  .canvas{position:relative;width:1400px;height:1150px;margin:0 auto;}
+  svg.arrows{position:absolute;left:0;top:0;width:1400px;height:1150px;pointer-events:none;}
+  svg.arrows line{stroke:#222;stroke-width:1.5;}
+
+  .ptitle{
+    position:absolute;
+    width:190px;
+    font-size:11px;
+    font-weight:700;
+    color:#444;
+    line-height:1.3;
+  }
+  .ptitle small{display:block;font-weight:600;color:var(--muted);font-size:9.5px;}
+
+  .phone{
+    position:absolute;
+    width:190px;
+    height:440px;
+    border:6px solid var(--bezel);
+    border-radius:28px;
+    background:#fff;
+    padding:12px 11px;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    box-shadow:0 6px 16px rgba(20,30,50,.07);
+  }
+
+  .alabel{
+    position:absolute;
+    font-size:9.5px;
+    line-height:1.3;
+    color:#222;
+  }
+  .alabel.c{text-align:center;}
+  .alabel.r{text-align:right;}
+  .alabel.l{text-align:left;}
+
+  /* ---- Screen pieces ---- */
+  .hdr{display:flex;align-items:center;gap:6px;margin-bottom:9px;}
+  .back{color:#1f8f5f;font-weight:800;font-size:13px;}
+  .title{background:var(--mint);font-weight:700;font-size:10.5px;padding:1px 5px;}
+  .field{margin-bottom:6px;}
+  .field label{display:block;font-size:7.8px;font-weight:700;margin-bottom:2px;}
+  .input{
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:3.5px 6px;
+    font-size:7.8px;
+    color:#b4b9c2;
+    background:#fff;
+  }
+  .input.filled{color:var(--ink);}
+  .field.err .input{border-color:var(--red);}
+  .msg{color:var(--red);font-size:6.8px;margin-top:1.5px;line-height:1.25;}
+  .hint{color:var(--muted);font-size:6.4px;margin-top:1.5px;line-height:1.25;}
+  .banner{
+    background:#fde4e4;color:var(--red);
+    font-size:7.5px;font-weight:700;text-align:center;
+    border-radius:6px;padding:4px;margin-bottom:7px;
+  }
+  .btn{
+    background:var(--peach);
+    border:1px solid var(--peach-dark);
+    border-radius:6px;
+    text-align:center;
+    font-weight:700;
+    font-size:8.5px;
+    padding:6px;
+    margin-top:5px;
+    color:#5c3a14;
+  }
+  .btn.pressed{background:var(--orange);border-color:var(--orange);color:#fff;}
+  .link{text-align:center;font-size:7.3px;color:var(--muted);margin-top:6px;}
+
+  .logo{text-align:center;margin-bottom:2px;}
+  .logo .chef{font-size:30px;line-height:1;}
+  .brand{text-align:center;font-weight:800;font-size:15px;}
+  .brand span{color:#e8892b;}
+  .welcome{
+    background:var(--mint);font-weight:800;font-size:10px;
+    text-align:center;margin:5px 4px 10px;padding:2px;
+  }
+  .foot{margin-top:auto;text-align:center;font-size:7.3px;color:var(--muted);}
+  .foot .reg{
+    display:inline-block;
+    padding:1px 4px;border-radius:5px;
+    color:#1f8f5f;font-weight:700;text-decoration:underline;
+  }
+  .foot .reg.hl{border:1.4px dashed #1f8f5f;background:#e6f8ee;}
+
+  .ok-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:9px;}
+  .check{
+    width:44px;height:44px;border-radius:50%;
+    background:var(--mint);color:#1f8f5f;
+    font-size:22px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .ok-title{font-size:10.5px;font-weight:800;}
+  .ok-sub{font-size:8px;color:var(--muted);line-height:1.4;padding:0 6px;}
+
+  /* ---- Sticky notes ---- */
+  .note{
+    position:absolute;
+    background:#fff7c2;
+    border-radius:4px;
+    padding:12px 14px;
+    font-size:11px;
+    line-height:1.5;
+    box-shadow:0 3px 8px rgba(0,0,0,.1);
+  }
+  .note b{display:block;margin-bottom:5px;font-size:11.5px;}
+  .note ul{margin:0;padding-left:15px;}
+  .note li{margin-bottom:3px;}
+</style>
+</head>
+<body>
+
+<h1>HU-001 · Registro de usuario — Prototipo de flujo</h1>
+<p class="sub">Camino feliz (fila superior) y caminos de error (fila inferior). Cada flecha indica la acción que lleva de una pantalla a otra.</p>
+
+<div class="canvas" id="canvas">
+
+  <svg class="arrows" viewBox="0 0 1400 1150">
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M1 1L9 5L1 9z" fill="#222"/>
+      </marker>
+    </defs>
+    <!-- Camino feliz -->
+    <line x1="236" y1="290" x2="314" y2="290" marker-end="url(#ah)"/>
+    <line x1="516" y1="290" x2="594" y2="290" marker-end="url(#ah)"/>
+    <line x1="796" y1="290" x2="874" y2="290" marker-end="url(#ah)"/>
+    <line x1="1076" y1="290" x2="1154" y2="290" marker-end="url(#ah)"/>
+    <!-- Errores: pantalla 2 <-> E1 -->
+    <line x1="385" y1="518" x2="385" y2="664" marker-end="url(#ah)"/>
+    <line x1="445" y1="664" x2="445" y2="518" marker-end="url(#ah)"/>
+    <!-- Errores: pantalla 3 <-> E2 -->
+    <line x1="665" y1="518" x2="665" y2="664" marker-end="url(#ah)"/>
+    <line x1="725" y1="664" x2="725" y2="518" marker-end="url(#ah)"/>
+  </svg>
+
+  <!-- Etiquetas de flechas: camino feliz -->
+  <div class="alabel c" style="left:230px;top:298px;width:90px;">Toca "Registrarse"</div>
+  <div class="alabel c" style="left:510px;top:298px;width:90px;">Diligencia los 6 campos</div>
+  <div class="alabel c" style="left:790px;top:298px;width:90px;">Toca "Registrarse" con datos válidos</div>
+  <div class="alabel c" style="left:1070px;top:298px;width:90px;">Toca "Ir a iniciar sesión"</div>
+
+  <!-- Etiquetas de flechas: errores -->
+  <div class="alabel r" style="left:290px;top:560px;width:88px;">Toca "Registrarse" sin completar los campos</div>
+  <div class="alabel l" style="left:455px;top:560px;width:88px;">Completa los campos pendientes</div>
+  <div class="alabel r" style="left:572px;top:560px;width:88px;">Toca "Registrarse" y hay datos no válidos</div>
+  <div class="alabel l" style="left:735px;top:560px;width:98px;">Corrige el error (los demás datos se conservan)</div>
+
+</div>
+
+<script>
+const FIELDS = [
+  {k:'nombres',    label:'Nombres',               ph:'Ej. Camila'},
+  {k:'apellidos',  label:'Apellidos',             ph:'Ej. Ruiz'},
+  {k:'correo',     label:'Correo electrónico',    ph:'name@example.com'},
+  {k:'restaurante',label:'Nombre del restaurante',ph:'Nombre del restaurante'},
+  {k:'pass',       label:'Contraseña',            ph:'Contraseña'},
+  {k:'confirm',    label:'Confirmar contraseña',  ph:'Repite la contraseña'}
+];
+
+function form({values={}, errors={}, hint=false, banner=null, pressed=false}){
+  const rows = FIELDS.map(f=>{
+    const v = values[f.k];
+    const e = errors[f.k];
+    return `<div class="field ${e?'err':''}">
+      <label>${f.label}</label>
+      <div class="input ${v?'filled':''}">${v||f.ph}</div>
+      ${e?`<div class="msg">${e}</div>`:''}
+      ${(hint && f.k==='pass' && !e)?'<div class="hint">Mín. 8 caracteres, 1 mayúscula, 1 minúscula y 1 número</div>':''}
+    </div>`;
+  }).join('');
+  return `
+    <div class="hdr"><span class="back">←</span><span class="title">Registro de usuario</span></div>
+    ${banner?`<div class="banner">${banner}</div>`:''}
+    ${rows}
+    <div class="btn ${pressed?'pressed':''}">Registrarse</div>
+    <div class="link">¿Ya tienes cuenta? Inicia sesión</div>`;
+}
+
+function login(highlight){
+  return `
+    <div class="logo"><div class="chef">👨‍🍳</div></div>
+    <div class="brand">Stock<span>Chef</span></div>
+    <div class="welcome">Welcome StockChef</div>
+    <div class="field"><label>Usuario</label><div class="input">name@example.com</div></div>
+    <div class="field"><label>Contraseña</label><div class="input">••••••••••••</div></div>
+    <div class="btn">INICIAR SESIÓN</div>
+    <div class="link">¿Olvidaste tu contraseña?</div>
+    <div class="foot">¿No tienes cuenta? <span class="reg ${highlight?'hl':''}">Registrarse${highlight?' 👆':''}</span></div>`;
+}
+
+function success(){
+  return `
+    <div class="ok-wrap">
+      <div class="check">✓</div>
+      <div class="ok-title">¡Cuenta creada<br>exitosamente!</div>
+      <div class="ok-sub">Ya puedes iniciar sesión con tu correo electrónico y contraseña.</div>
+      <div class="btn" style="width:100%;">Ir a iniciar sesión</div>
+    </div>`;
+}
+
+const valid = {nombres:'Camila', apellidos:'Ruiz', correo:'camila@correo.com', restaurante:'Sabor Casero', pass:'••••••••', confirm:'••••••••'};
+
+const emptyErrors = {};
+FIELDS.forEach(f => emptyErrors[f.k] = 'Campo obligatorio');
+
+const invalid = {nombres:'Camila', apellidos:'Ruiz', correo:'camila@correo.com', restaurante:'Sabor Casero', pass:'••••••', confirm:'•••••'};
+const invalidErrors = {
+  correo:'Este correo ya está registrado',
+  pass:'Mínimo 8 caracteres, con mayúscula, minúscula y número',
+  confirm:'Las contraseñas no coinciden'
+};
+
+const screens = [
+  // Fila superior: camino feliz
+  {x:40,   y:70,  tx:40,   ty:34, t:'1 · Pantalla inicial (Login)', s:'Punto de partida', html:login(true)},
+  {x:320,  y:70,  tx:320,  ty:34, t:'2 · Formulario de registro', s:'CA1, CA2 · Todos los campos son obligatorios', html:form({hint:true})},
+  {x:600,  y:70,  tx:600,  ty:34, t:'3 · Datos diligenciados', s:'CA1, CA2 · Listo para enviar', html:form({values:valid, hint:true, pressed:true})},
+  {x:880,  y:70,  tx:880,  ty:34, t:'4 · Cuenta creada', s:'CA9, CA10, CA11', html:success()},
+  {x:1160, y:70,  tx:1160, ty:34, t:'5 · Inicio de sesión', s:'CA11, CA12 · Ingresa con correo y contraseña', html:login(false)},
+  // Fila inferior: errores
+  {x:320,  y:670, tx:320,  ty:634, t:'E1 · Campos obligatorios pendientes', s:'CA2, CA3', html:form({errors:emptyErrors, banner:'Completa los campos obligatorios'})},
+  {x:600,  y:670, tx:600,  ty:634, t:'E2 · Datos no válidos', s:'CA4 a CA8 · Se conservan los datos válidos', html:form({values:invalid, errors:invalidErrors, banner:'Corrige los campos marcados'})}
+];
+
+const canvas = document.getElementById('canvas');
+screens.forEach(s=>{
+  const t = document.createElement('div');
+  t.className='ptitle';
+  t.style.left=s.tx+'px'; t.style.top=s.ty+'px';
+  t.innerHTML = `${s.t}<small>${s.s}</small>`;
+  canvas.appendChild(t);
+  const p = document.createElement('div');
+  p.className='phone';
+  p.style.left=s.x+'px'; p.style.top=s.y+'px';
+  p.innerHTML = s.html;
+  canvas.appendChild(p);
+});
+
+const notes = [
+  {x:880, y:670, w:240, html:`<b>Regla de rol (CA10)</b>El primer usuario que registra un restaurante queda como <strong>Administrador</strong>. Los usuarios siguientes quedan <strong>sin rol</strong> hasta que el administrador se lo asigne (HU-003).`},
+  {x:1140,y:670, w:250, html:`<b>Mensajes de validación (CA4–CA7)</b><ul>
+      <li>Formato inválido: "Ingresa un correo válido"</li>
+      <li>Correo repetido: "Este correo ya está registrado"</li>
+      <li>Contraseña débil: "Mínimo 8 caracteres, con mayúscula, minúscula y número"</li>
+      <li>No coinciden: "Las contraseñas no coinciden"</li></ul>`},
+  {x:880, y:900, w:510, html:`<b>Cobertura de los criterios de aceptación</b><ul>
+      <li><strong>CA1–CA2:</strong> pantallas 2 y 3 (6 campos, todos obligatorios)</li>
+      <li><strong>CA3:</strong> pantalla E1 (indica qué campos faltan)</li>
+      <li><strong>CA4–CA8:</strong> pantalla E2 y nota de mensajes (corrige sin perder los demás datos)</li>
+      <li><strong>CA9–CA10:</strong> pantalla 4 (cuenta creada; rol según la nota)</li>
+      <li><strong>CA11:</strong> paso de la pantalla 4 a la 5 (lleva al inicio de sesión)</li>
+      <li><strong>CA12:</strong> pantalla 5 (ingreso con correo y contraseña, ver HU-002)</li></ul>`}
+];
+notes.forEach(n=>{
+  const d = document.createElement('div');
+  d.className='note';
+  d.style.left=n.x+'px'; d.style.top=n.y+'px'; d.style.width=n.w+'px';
+  d.innerHTML=n.html;
+  canvas.appendChild(d);
+});
+</script>
+</body>
+</html>

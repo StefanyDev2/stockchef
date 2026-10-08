@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>HU-002 · Inicio de sesión — Prototipo</title>
+<style>
+  :root{
+    --mint:#b8f0d0;
+    --green:#1f8f5f;
+    --peach:#f9cfa6;
+    --peach-dark:#f0b27a;
+    --orange:#f5a65b;
+    --ink:#1f2430;
+    --muted:#8b93a1;
+    --line:#d3d7de;
+    --red:#e03e3e;
+    --bezel:#e5e5ee;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    padding:28px 20px 40px;
+    background:
+      linear-gradient(90deg, rgba(0,0,0,.035) 1px, transparent 1px) 0 0/28px 28px,
+      linear-gradient(0deg, rgba(0,0,0,.035) 1px, transparent 1px) 0 0/28px 28px,
+      #f4f4f6;
+    font-family:'Segoe UI', Arial, sans-serif;
+    color:var(--ink);
+    overflow-x:auto;
+  }
+  h1{margin:0 0 4px;font-size:18px;font-weight:800;text-align:center;}
+  .sub{margin:0 0 18px;font-size:12.5px;color:var(--muted);text-align:center;}
+  .canvas{position:relative;width:1500px;height:1800px;margin:0 auto;}
+  svg.arrows{position:absolute;left:0;top:0;width:1500px;height:1800px;pointer-events:none;}
+  svg.arrows line{stroke:#222;stroke-width:1.5;}
+
+  .ptitle{
+    position:absolute;
+    width:190px;
+    font-size:11px;
+    font-weight:700;
+    color:#444;
+    line-height:1.3;
+  }
+  .ptitle small{display:block;font-weight:600;color:var(--muted);font-size:9.5px;}
+
+  .phone{
+    position:absolute;
+    width:190px;
+    height:440px;
+    border:6px solid var(--bezel);
+    border-radius:28px;
+    background:#fff;
+    padding:12px 11px;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    box-shadow:0 6px 16px rgba(20,30,50,.07);
+  }
+
+  .alabel{position:absolute;font-size:9.5px;line-height:1.3;color:#222;}
+  .alabel.c{text-align:center;}
+  .alabel.r{text-align:right;}
+  .alabel.l{text-align:left;}
+
+  .pill{
+    position:absolute;
+    width:190px;height:50px;
+    border:1.5px dashed #888;
+    border-radius:26px;
+    background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:10.5px;font-weight:700;color:#444;text-align:center;
+    padding:0 12px;
+  }
+
+  /* ---- Login pieces ---- */
+  .logo{text-align:center;margin-bottom:2px;}
+  .logo .chef{font-size:30px;line-height:1;}
+  .brand{text-align:center;font-weight:800;font-size:15px;}
+  .brand span{color:#e8892b;}
+  .welcome{background:var(--mint);font-weight:800;font-size:10px;text-align:center;margin:5px 4px 10px;padding:2px;}
+  .field{margin-bottom:7px;}
+  .field label{display:block;font-size:7.8px;font-weight:700;margin-bottom:2px;}
+  .input{
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:4px 6px;
+    font-size:7.8px;
+    color:#b4b9c2;
+    background:#fff;
+  }
+  .input.filled{color:var(--ink);}
+  .input.pw{display:flex;justify-content:space-between;align-items:center;}
+  .eye{font-size:9px;}
+  .eye.hl{border:1.3px dashed var(--green);background:#e6f8ee;border-radius:50%;padding:1px 3px;}
+  .field.err .input{border-color:var(--red);}
+  .field.disabled .input{background:#f1f2f4;color:#a9adb5;}
+  .msg{color:var(--red);font-size:6.8px;margin-top:1.5px;}
+  .banner{
+    background:#fde4e4;color:var(--red);
+    font-size:7.5px;font-weight:700;text-align:center;
+    border-radius:6px;padding:5px;margin-bottom:8px;line-height:1.3;
+  }
+  .btn{
+    background:var(--peach);
+    border:1px solid var(--peach-dark);
+    border-radius:6px;
+    text-align:center;
+    font-weight:700;
+    font-size:8.5px;
+    padding:6px;
+    margin-top:5px;
+    color:#5c3a14;
+  }
+  .btn.pressed{background:var(--orange);border-color:var(--orange);color:#fff;}
+  .btn.disabled{background:#e6e8eb;border-color:#d3d6db;color:#9aa0a8;}
+  .link{text-align:center;font-size:7.3px;color:var(--muted);margin-top:6px;}
+  .blocknote{text-align:center;font-size:7px;color:var(--muted);margin-top:8px;line-height:1.4;padding:0 4px;}
+  .foot{margin-top:auto;text-align:center;font-size:7.3px;color:var(--muted);}
+  .foot .reg{color:var(--green);font-weight:700;text-decoration:underline;}
+
+  /* ---- Home pieces ---- */
+  .menu-top{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+  .avatar-mini{
+    width:22px;height:22px;border-radius:50%;background:#dff5e8;
+    display:flex;align-items:center;justify-content:center;font-size:11px;
+  }
+  .username{font-weight:700;font-size:10px;flex:1;}
+  .burger{
+    width:20px;height:20px;border-radius:50%;background:#dff5e8;
+    display:flex;align-items:center;justify-content:center;font-size:10px;color:#2f7a54;
+  }
+  .burger.hl{border:1.4px dashed var(--green);}
+  .greeting{
+    background:var(--mint);font-weight:700;font-size:9.5px;
+    text-align:center;padding:6px;margin-bottom:12px;line-height:1.35;
+  }
+  .menu-btn{
+    border:1.2px solid var(--ink);
+    border-radius:8px;
+    padding:7px 9px;
+    font-size:9px;
+    font-weight:600;
+    margin-bottom:8px;
+    background:#fff;
+  }
+  .menu-btn.out{border:1.5px dashed var(--green);background:#e6f8ee;color:#1f6f4c;}
+
+  .hdr{display:flex;align-items:center;gap:6px;margin-bottom:12px;}
+  .back{color:var(--green);font-weight:800;font-size:13px;}
+  .title{background:var(--mint);font-weight:700;font-size:10.5px;padding:1px 5px;}
+  .acct{text-align:center;margin:8px 0 16px;}
+  .avatar-big{
+    width:44px;height:44px;border-radius:50%;background:#dff5e8;
+    display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 6px;
+  }
+  .acct-name{font-weight:800;font-size:10px;}
+  .acct-role{display:inline-block;margin-top:3px;font-size:7.5px;font-weight:700;background:#e6f8ee;color:#1f6f4c;border-radius:8px;padding:1px 8px;}
+
+  .ok-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:9px;}
+  .check{
+    width:44px;height:44px;border-radius:50%;
+    background:#fff1c9;font-size:21px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .ok-title{font-size:10.5px;font-weight:800;padding:0 4px;line-height:1.3;}
+  .ok-sub{font-size:8px;color:var(--muted);line-height:1.4;padding:0 6px;}
+
+  /* ---- Sticky notes ---- */
+  .note{
+    position:absolute;
+    background:#fff7c2;
+    border-radius:4px;
+    padding:12px 14px;
+    font-size:11px;
+    line-height:1.5;
+    box-shadow:0 3px 8px rgba(0,0,0,.1);
+  }
+  .note b{display:block;margin-bottom:5px;font-size:11.5px;}
+  .note ul{margin:0;padding-left:15px;}
+  .note li{margin-bottom:3px;}
+</style>
+</head>
+<body>
+
+<h1>HU-002 · Inicio de sesión — Prototipo de flujo</h1>
+<p class="sub">Ingreso según el rol, caminos de error, bloqueo de la cuenta y cierre de sesión. Cada flecha indica la acción que lleva de una pantalla a otra.</p>
+
+<div class="canvas" id="canvas">
+
+  <svg class="arrows" viewBox="0 0 1500 1800">
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M1 1L9 5L1 9z" fill="#222"/>
+      </marker>
+    </defs>
+
+    <!-- Fila central: camino principal -->
+    <line x1="236" y1="920" x2="314" y2="920" marker-end="url(#ah)"/>
+    <line x1="896" y1="920" x2="974" y2="920" marker-end="url(#ah)"/>
+    <line x1="1176" y1="920" x2="1254" y2="920" marker-end="url(#ah)"/>
+
+    <!-- Abanico por rol -->
+    <line x1="516" y1="920" x2="560" y2="920"/>
+    <line x1="560" y1="320" x2="560" y2="1520"/>
+    <line x1="560" y1="320" x2="694" y2="320" marker-end="url(#ah)"/>
+    <line x1="560" y1="920" x2="694" y2="920" marker-end="url(#ah)"/>
+    <line x1="560" y1="1520" x2="694" y2="1520" marker-end="url(#ah)"/>
+
+    <!-- Pantalla 2 <-> E1 (campos vacíos) -->
+    <line x1="385" y1="640" x2="385" y2="546" marker-end="url(#ah)"/>
+    <line x1="445" y1="546" x2="445" y2="640" marker-end="url(#ah)"/>
+
+    <!-- Pantalla 2 <-> E2 (credenciales no válidas) -->
+    <line x1="385" y1="1146" x2="385" y2="1240" marker-end="url(#ah)"/>
+    <line x1="445" y1="1240" x2="445" y2="1146" marker-end="url(#ah)"/>
+
+    <!-- E2 -> E3 (bloqueo) y E3 -> pantalla 1 (desbloqueo) -->
+    <line x1="314" y1="1520" x2="236" y2="1520" marker-end="url(#ah)"/>
+    <line x1="135" y1="1240" x2="135" y2="1146" marker-end="url(#ah)"/>
+  </svg>
+
+  <!-- Etiquetas: fila central -->
+  <div class="alabel c" style="left:230px;top:928px;width:90px;">Ingresa correo y contraseña</div>
+  <div class="alabel c" style="left:890px;top:928px;width:90px;">Toca el menú ☰</div>
+  <div class="alabel c" style="left:1170px;top:928px;width:90px;">Toca "Cerrar sesión"</div>
+
+  <!-- Etiquetas: abanico por rol -->
+  <div class="alabel l" style="left:568px;top:740px;width:124px;">Toca "Iniciar sesión" con correo y contraseña correctos</div>
+  <div class="alabel l" style="left:568px;top:288px;width:124px;">Rol: Auxiliar de cocina</div>
+  <div class="alabel l" style="left:568px;top:888px;width:124px;">Rol: Administrador</div>
+  <div class="alabel l" style="left:568px;top:1488px;width:124px;">Sin rol asignado</div>
+
+  <!-- Etiquetas: errores -->
+  <div class="alabel r" style="left:290px;top:572px;width:88px;">Toca "Iniciar sesión" con campos vacíos</div>
+  <div class="alabel l" style="left:455px;top:578px;width:98px;">Diligencia los campos</div>
+  <div class="alabel r" style="left:290px;top:1158px;width:88px;">Toca "Iniciar sesión" con credenciales incorrectas</div>
+  <div class="alabel l" style="left:455px;top:1163px;width:98px;">Vuelve a ingresar sus credenciales</div>
+  <div class="alabel c" style="left:230px;top:1462px;width:90px;">3.er intento fallido seguido</div>
+  <div class="alabel l" style="left:145px;top:1152px;width:128px;">Pasadas 2 horas: puede ingresar de nuevo y el contador se reinicia</div>
+
+  <!-- Nodo de retorno -->
+  <div class="pill" style="left:1260px;top:895px;">↩ Vuelve al Login (pantalla 1)</div>
+
+</div>
+
+<script>
+function login({email='', pass='', errors={}, banner=null, pressed=false, disabled=false, eyeHl=false, note=null}){
+  const e = email ? `<div class="input filled">${email}</div>` : `<div class="input">name@example.com</div>`;
+  const p = pass ? `<span style="color:#1f2430">${pass}</span>` : `<span>Contraseña</span>`;
+  return `
+    <div class="logo"><div class="chef">👨‍🍳</div></div>
+    <div class="brand">Stock<span>Chef</span></div>
+    <div class="welcome">Welcome StockChef</div>
+    ${banner?`<div class="banner">${banner}</div>`:''}
+    <div class="field ${errors.email?'err':''} ${disabled?'disabled':''}">
+      <label>Correo electrónico</label>${e}
+      ${errors.email?`<div class="msg">${errors.email}</div>`:''}
+    </div>
+    <div class="field ${errors.pass?'err':''} ${disabled?'disabled':''}">
+      <label>Contraseña</label>
+      <div class="input pw">${p}<span class="eye ${eyeHl?'hl':''}">👁</span></div>
+      ${errors.pass?`<div class="msg">${errors.pass}</div>`:''}
+    </div>
+    <div class="btn ${pressed?'pressed':''} ${disabled?'disabled':''}">INICIAR SESIÓN</div>
+    ${note?`<div class="blocknote">${note}</div>`:`<div class="link">¿Olvidaste tu contraseña?</div>`}
+    <div class="foot">¿No tienes cuenta? <span class="reg">Registrarse</span></div>`;
+}
+
+function home({name, items, burgerHl=false}){
+  return `
+    <div class="menu-top">
+      <div class="avatar-mini">👤</div>
+      <div class="username">${name}</div>
+      <div class="burger ${burgerHl?'hl':''}">☰</div>
+    </div>
+    <div class="greeting">Hola ${name},<br>¿Qué quieres hacer hoy?</div>
+    ${items.map(i=>`<div class="menu-btn">${i}</div>`).join('')}`;
+}
+
+function accountMenu(){
+  return `
+    <div class="hdr"><span class="back">←</span><span class="title">Mi cuenta</span></div>
+    <div class="acct">
+      <div class="avatar-big">👤</div>
+      <div class="acct-name">Camila Ruiz</div>
+      <div class="acct-role">Administrador</div>
+    </div>
+    <div class="menu-btn out">🚪 Cerrar sesión</div>`;
+}
+
+function noRole(){
+  return `
+    <div class="menu-top">
+      <div class="avatar-mini">👤</div>
+      <div class="username">Camila</div>
+    </div>
+    <div class="ok-wrap">
+      <div class="check">⏳</div>
+      <div class="ok-title">Tu cuenta está pendiente de asignación de rol</div>
+      <div class="ok-sub">Un administrador debe asignarte un rol para que puedas usar la aplicación.</div>
+    </div>
+    <div class="foot"><span class="reg">Cerrar sesión</span></div>`;
+}
+
+const screens = [
+  // Fila central
+  {x:40,  y:700, t:'1 · Login', s:'CA1, CA2 · Contraseña oculta con opción de verla',
+    html: login({})},
+  {x:320, y:700, t:'2 · Credenciales diligenciadas', s:'CA1, CA2, CA4 · Contraseña visible al tocar el ojo',
+    html: login({email:'camila@correo.com', pass:'Clave2026', pressed:true, eyeHl:true})},
+  {x:700, y:700, t:'3A · Pantalla principal: Administrador', s:'CA5, CA6',
+    html: home({name:'Camila', items:['Compras','Insumos','Menú','Reportes','Usuarios'], burgerHl:true})},
+  {x:980, y:700, t:'4 · Menú ☰ de la cuenta', s:'CA13 · Cerrar sesión',
+    html: accountMenu()},
+  // Fila superior
+  {x:320, y:100, t:'E1 · Campos sin diligenciar', s:'CA3',
+    html: login({errors:{email:'Ingresa tu correo electrónico', pass:'Ingresa tu contraseña'}, banner:'Completa ambos campos'})},
+  {x:700, y:100, t:'3B · Pantalla principal: Auxiliar de cocina', s:'CA5, CA6',
+    html: home({name:'Daniela', items:['Consumo del día','Pérdidas','Platos vendidos','Menú del día']})},
+  // Fila inferior
+  {x:40,  y:1300, t:'E3 · Cuenta bloqueada por 2 horas', s:'CA10, CA11, CA12',
+    html: login({email:'camila@correo.com', pass:'••••••••', disabled:true,
+      banner:'🔒 Alcanzaste el número máximo de intentos. Tu cuenta está bloqueada por 2 horas.',
+      note:'Mientras la cuenta esté bloqueada no podrás ingresar, aunque tus credenciales sean correctas.'})},
+  {x:320, y:1300, t:'E2 · Credenciales no válidas', s:'CA8, CA9 · No indica cuál dato falló',
+    html: login({email:'camila@correo.com', banner:'Las credenciales no son válidas'})},
+  {x:700, y:1300, t:'3C · Cuenta sin rol asignado', s:'CA7 · No muestra ninguna función',
+    html: noRole()}
+];
+
+const canvas = document.getElementById('canvas');
+screens.forEach(s=>{
+  const t = document.createElement('div');
+  t.className='ptitle';
+  t.style.left=s.x+'px'; t.style.top=(s.y-52)+'px';
+  t.innerHTML = `${s.t}<small>${s.s}</small>`;
+  canvas.appendChild(t);
+  const p = document.createElement('div');
+  p.className='phone';
+  p.style.left=s.x+'px'; p.style.top=s.y+'px';
+  p.innerHTML = s.html;
+  canvas.appendChild(p);
+});
+
+const notes = [
+  {x:40,   y:100, w:230, html:`<b>Contraseña (CA2)</b>Se muestra oculta (••••) por defecto. El ícono del ojo 👁 permite verla; la pantalla 2 la muestra visible.`},
+  {x:980,  y:100, w:220, html:`<b>Sesión (CA13)</b>Al cerrar y volver a abrir la app, el usuario entra directo a su pantalla principal. La sesión solo termina con "Cerrar sesión" del menú ☰ (pantalla 4).`},
+  {x:1220, y:100, w:230, html:`<b>Mensaje de error (CA8)</b>Siempre "Las credenciales no son válidas", sin decir si falló el correo o la contraseña.<br><br><b>Rendimiento (CA14)</b>El inicio de sesión debe responder en máximo 2 segundos.`},
+  {x:980,  y:1300, w:470, html:`<b>Cobertura de los criterios de aceptación</b><ul>
+      <li><strong>CA1–CA2:</strong> pantallas 1 y 2 (correo y contraseña con ojo)</li>
+      <li><strong>CA3:</strong> pantalla E1 (valida que ambos campos estén diligenciados)</li>
+      <li><strong>CA4–CA5:</strong> flecha de la pantalla 2 hacia las pantallas principales</li>
+      <li><strong>CA6:</strong> pantallas 3A (Administrador) y 3B (Auxiliar de cocina)</li>
+      <li><strong>CA7:</strong> pantalla 3C (sin rol: aviso y ninguna función)</li>
+      <li><strong>CA8–CA9:</strong> pantalla E2 (error genérico y nuevo intento)</li>
+      <li><strong>CA10–CA11:</strong> pantalla E3 (bloqueo de 2 horas, aunque las credenciales sean correctas)</li>
+      <li><strong>CA12:</strong> flecha de E3 a la pantalla 1 (pasadas 2 horas, contador en cero)</li>
+      <li><strong>CA13:</strong> pantalla 4 y nota de sesión</li>
+      <li><strong>CA14:</strong> nota de rendimiento</li></ul>`}
+];
+notes.forEach(n=>{
+  const d = document.createElement('div');
+  d.className='note';
+  d.style.left=n.x+'px'; d.style.top=n.y+'px'; d.style.width=n.w+'px';
+  d.innerHTML=n.html;
+  canvas.appendChild(d);
+});
+</script>
+</body>
+</html>
