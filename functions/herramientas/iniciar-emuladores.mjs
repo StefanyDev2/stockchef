@@ -1,6 +1,6 @@
 // Enciende los emuladores de Firebase (Auth, Firestore y Functions) y guarda
-// sus datos en .emulador-datos/ al cerrarlos con Ctrl+C. La próxima vez los
-// vuelve a cargar, así los usuarios de prueba no se pierden.
+// sus datos en .emulador-datos/ cada 2 minutos y al cerrarlos con Ctrl+C.
+// La próxima vez los vuelve a cargar, así los datos de prueba no se pierden.
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -33,4 +33,20 @@ const firebase = spawn("firebase", args, {
   stdio: "inherit",
   shell: true,
 });
-firebase.on("exit", (codigo) => process.exit(codigo ?? 0));
+
+// Guarda también cada 2 minutos, por si el computador se apaga o el
+// emulador se cierra sin Ctrl+C. Si falla (por ejemplo, mientras arranca),
+// se intenta en la siguiente vuelta.
+const guardado = setInterval(() => {
+  spawn("firebase", ["emulators:export", datos, "--force"], {
+    cwd: raiz,
+    env: entorno,
+    stdio: "ignore",
+    shell: true,
+  }).on("error", () => {});
+}, 2 * 60_000);
+
+firebase.on("exit", (codigo) => {
+  clearInterval(guardado);
+  process.exit(codigo ?? 0);
+});

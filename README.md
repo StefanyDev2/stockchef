@@ -43,7 +43,7 @@ npm install
 npm run emuladores
 ```
 
-Los datos se guardan en `.emulador-datos/` al cerrar con Ctrl+C y se cargan la próxima vez.
+Los datos se guardan en `.emulador-datos/` cada 2 minutos y al cerrar con Ctrl+C, y se cargan la próxima vez.
 En otra terminal, la primera vez, crea los usuarios de prueba:
 
 ```bash
