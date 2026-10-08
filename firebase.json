@@ -34,7 +34,9 @@
         "firebase-debug.log",
         "firebase-debug.*.log",
         "*.local",
-        "lib/test"
+        "lib/test",
+        "lib/herramientas",
+        "herramientas"
       ],
       "predeploy": [
         "npm --prefix \"$RESOURCE_DIR\" run build"
