@@ -35,7 +35,11 @@ abstract final class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.fondo,
+        fillColor: WidgetStateColor.resolveWith(
+          (estados) => estados.contains(WidgetState.disabled)
+              ? AppColors.campoDeshabilitado
+              : AppColors.fondo,
+        ),
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
@@ -62,18 +66,24 @@ abstract final class AppTheme {
             TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
           ),
           backgroundColor: WidgetStateProperty.resolveWith(
-            (estados) => estados.contains(WidgetState.pressed)
+            (estados) => estados.contains(WidgetState.disabled)
+                ? AppColors.deshabilitado
+                : estados.contains(WidgetState.pressed)
                 ? AppColors.naranja
                 : AppColors.durazno,
           ),
           foregroundColor: WidgetStateProperty.resolveWith(
-            (estados) => estados.contains(WidgetState.pressed)
+            (estados) => estados.contains(WidgetState.disabled)
+                ? AppColors.deshabilitadoTexto
+                : estados.contains(WidgetState.pressed)
                 ? Colors.white
                 : AppColors.duraznoTexto,
           ),
           side: WidgetStateProperty.resolveWith(
             (estados) => BorderSide(
-              color: estados.contains(WidgetState.pressed)
+              color: estados.contains(WidgetState.disabled)
+                  ? AppColors.deshabilitadoBorde
+                  : estados.contains(WidgetState.pressed)
                   ? AppColors.naranja
                   : AppColors.duraznoBorde,
             ),

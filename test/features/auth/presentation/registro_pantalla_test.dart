@@ -8,6 +8,9 @@ import 'package:stockchef/features/auth/domain/datos_registro.dart';
 import 'package:stockchef/features/auth/domain/mensajes_validacion.dart';
 import 'package:stockchef/features/auth/domain/registro_repositorio.dart';
 import 'package:stockchef/features/auth/presentation/registro_controlador.dart';
+import 'package:stockchef/features/auth/presentation/sesion_controlador.dart';
+
+import '../../../ayudantes.dart';
 
 /// Repositorio falso: guarda lo que recibe y responde lo que se le indique.
 class RegistroFalso implements RegistroRepositorio {
@@ -53,7 +56,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [registroRepositorioProvider.overrideWithValue(repositorio)],
+        overrides: [
+          registroRepositorioProvider.overrideWithValue(repositorio),
+          sesionRepositorioProvider.overrideWithValue(SesionFalsa()),
+        ],
         child: const StockChefApp(),
       ),
     );

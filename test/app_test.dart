@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stockchef/app.dart';
 import 'package:stockchef/core/widgets/marca_stockchef.dart';
 
-void main() {
-  Future<void> abrirApp(WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: StockChefApp()));
-    await tester.pumpAndSettle();
-  }
+import 'ayudantes.dart';
 
+void main() {
   testWidgets('abre en el inicio de sesión con la marca StockChef', (
     tester,
   ) async {
