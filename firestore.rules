@@ -1,0 +1,57 @@
+rules_version = '2';
+
+// Reglas de StockChef (HU-001 y HU-002). Principios en docs/modelo-datos.md.
+//
+// - Nadie lee ni escribe sin sesión iniciada.
+// - Los documentos de users y restaurants solo los crea la Cloud Function
+//   registrarUsuario (con privilegios de administrador, que no pasa por
+//   estas reglas). Desde la app no se puede crear, cambiar ni borrar nada,
+//   así nadie puede darse el rol de administrador ni cambiar su propio rol.
+// - loginLockouts lo maneja solo una Cloud Function (HU-002, opción A).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function autenticado() {
+      return request.auth != null;
+    }
+
+    function miPerfil() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function existeMiPerfil() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function soyAdministradorDe(restaurantId) {
+      return existeMiPerfil()
+        && miPerfil().activo == true
+        && miPerfil().rol == 'administrador'
+        && miPerfil().restaurantId == restaurantId;
+    }
+
+    match /users/{uid} {
+      // Cada usuario lee su propio perfil; el administrador lee los de su
+      // restaurante (se usa en HU-003).
+      allow read: if autenticado()
+        && (request.auth.uid == uid || soyAdministradorDe(resource.data.restaurantId));
+      allow write: if false;
+    }
+
+    match /restaurants/{restaurantId} {
+      allow read: if autenticado()
+        && existeMiPerfil()
+        && miPerfil().restaurantId == restaurantId;
+      allow write: if false;
+    }
+
+    match /loginLockouts/{correo} {
+      allow read, write: if false;
+    }
+
+    // Todo lo demás queda cerrado hasta que otra historia lo abra.
+    match /{documento=**} {
+      allow read, write: if false;
+    }
+  }
+}
