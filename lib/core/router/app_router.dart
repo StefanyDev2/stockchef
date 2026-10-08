@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/cuenta_creada_pantalla.dart';
+import '../../features/auth/presentation/inicio_provisional_pantalla.dart';
 import '../../features/auth/presentation/inicio_sesion_pantalla.dart';
 import '../../features/auth/presentation/registro_pantalla.dart';
 
@@ -10,6 +11,7 @@ abstract final class Rutas {
   static const inicioSesion = '/inicio-sesion';
   static const registro = '/registro';
   static const cuentaCreada = '/cuenta-creada';
+  static const inicio = '/inicio';
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -27,6 +29,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Rutas.cuentaCreada,
         builder: (context, state) => const CuentaCreadaPantalla(),
+      ),
+      GoRoute(
+        path: Rutas.inicio,
+        builder: (context, state) =>
+            InicioProvisionalPantalla(nombre: state.extra as String? ?? ''),
       ),
     ],
   );

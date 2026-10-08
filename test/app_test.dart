@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stockchef/app.dart';
+import 'package:stockchef/core/widgets/marca_stockchef.dart';
 
 void main() {
   Future<void> abrirApp(WidgetTester tester) async {
@@ -14,7 +15,7 @@ void main() {
   ) async {
     await abrirApp(tester);
 
-    expect(find.bySemanticsLabel('StockChef'), findsOneWidget);
+    expect(find.byType(MarcaStockChef), findsOneWidget);
     expect(find.text('Registrarse'), findsOneWidget);
   });
 
