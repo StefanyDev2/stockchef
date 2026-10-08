@@ -16,4 +16,8 @@ abstract final class MensajesValidacion {
 
   /// Aviso superior cuando hay datos no válidos (pantalla E2).
   static const corrigeCampos = 'Corrige los campos marcados';
+
+  static const sinConexion =
+      'No hay conexión. Revisa tu internet e intenta de nuevo.';
+  static const errorInterno = 'No se pudo crear la cuenta. Intenta de nuevo.';
 }
