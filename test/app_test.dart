@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stockchef/app.dart';
@@ -39,7 +40,18 @@ void main() {
 
     await tester.tap(find.text('Registrarse'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('¿Ya tienes cuenta? Inicia sesión'));
+    final enlace = find.text('¿Ya tienes cuenta? Inicia sesión');
+    await tester.scrollUntilVisible(
+      enlace,
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.tap(enlace);
     await tester.pumpAndSettle();
 
     expect(find.text('Registrarse'), findsOneWidget);

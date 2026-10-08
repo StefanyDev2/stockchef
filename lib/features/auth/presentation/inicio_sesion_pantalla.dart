@@ -24,8 +24,9 @@ class InicioSesionPantalla extends StatelessWidget {
               const SizedBox(height: 12),
               const TituloResaltado('Bienvenido a StockChef'),
               const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   const Text(
                     '¿No tienes cuenta?',
