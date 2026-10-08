@@ -46,6 +46,16 @@ class CampoTexto extends StatefulWidget {
 class _CampoTextoState extends State<CampoTexto> {
   bool _oculto = true;
 
+  /// El ojo no recibe el foco con "Siguiente" del teclado; así el foco pasa
+  /// directo al campo siguiente. Se sigue usando al tocarlo.
+  final _focoOjo = FocusNode(skipTraversal: true);
+
+  @override
+  void dispose() {
+    _focoOjo.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final ocultar = widget.esContrasena && _oculto;
@@ -78,6 +88,7 @@ class _CampoTextoState extends State<CampoTexto> {
             helperText: widget.error == null ? widget.ayuda : null,
             suffixIcon: widget.esContrasena
                 ? IconButton(
+                    focusNode: _focoOjo,
                     icon: Icon(
                       _oculto ? Icons.visibility_off : Icons.visibility,
                     ),

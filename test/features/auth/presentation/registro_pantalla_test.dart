@@ -263,6 +263,25 @@ void main() {
     expect(find.text('¡Cuenta creada exitosamente!'), findsOneWidget);
   });
 
+  testWidgets(
+    '"Siguiente" del teclado recorre los campos sin pasar por el ojo',
+    (tester) async {
+      await abrirRegistro(tester);
+      bool tieneFoco(CampoRegistro campo) =>
+          FocusManager.instance.primaryFocus?.context
+              ?.findAncestorWidgetOfExactType<TextField>() ==
+          tester.widget<TextField>(_campo(campo));
+
+      await tester.tap(_campo(CampoRegistro.nombres));
+      await tester.pump();
+      for (final siguiente in CampoRegistro.values.skip(1)) {
+        await tester.testTextInput.receiveAction(TextInputAction.next);
+        await tester.pumpAndSettle();
+        expect(tieneFoco(siguiente), isTrue, reason: siguiente.name);
+      }
+    },
+  );
+
   testWidgets('la contraseña va oculta y el ojo permite verla', (tester) async {
     await abrirRegistro(tester);
     bool oculta() =>
