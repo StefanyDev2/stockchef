@@ -4,4 +4,7 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Solo en depuración: el emulador de Firebase del computador usa HTTP
+         sin cifrar (10.0.2.2). Las versiones de publicación no lo permiten. -->
+    <application android:usesCleartextTraffic="true"/>
 </manifest>
