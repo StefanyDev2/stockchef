@@ -1,12 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/sesion_repositorio_firebase.dart';
 import '../domain/inicio_sesion.dart';
-
-final sesionRepositorioProvider = Provider<SesionRepositorio>(
-  (ref) => SesionRepositorioFirebase(FirebaseAuth.instance),
-);
+import 'sesion_controlador.dart';
 
 final inicioSesionControladorProvider =
     NotifierProvider.autoDispose<InicioSesionControlador, EstadoInicioSesion>(
@@ -18,20 +16,32 @@ class EstadoInicioSesion {
     this.errores = const {},
     this.aviso,
     this.enviando = false,
+    this.bloqueadoHasta,
   });
 
   final Map<CampoInicioSesion, String> errores;
   final String? aviso;
   final bool enviando;
+
+  /// Mientras tenga valor, el formulario queda deshabilitado (pantalla E3).
+  final DateTime? bloqueadoHasta;
+
+  bool get bloqueado => bloqueadoHasta != null;
 }
 
 class InicioSesionControlador extends Notifier<EstadoInicioSesion> {
-  @override
-  EstadoInicioSesion build() => const EstadoInicioSesion();
+  Timer? _finBloqueo;
 
-  /// Devuelve el nombre del usuario si pudo entrar, o `null` si no.
-  Future<String?> iniciarSesion(DatosInicioSesion datos) async {
-    if (state.enviando) return null;
+  @override
+  EstadoInicioSesion build() {
+    ref.onDispose(() => _finBloqueo?.cancel());
+    return const EstadoInicioSesion();
+  }
+
+  /// Intenta entrar. Si se acepta, avisa a la sesión y las rutas llevan a
+  /// la pantalla del rol (CA5, CA6, CA7).
+  Future<void> iniciarSesion(DatosInicioSesion datos) async {
+    if (state.enviando || state.bloqueado) return;
 
     final errores = datos.validar();
     if (errores.isNotEmpty) {
@@ -41,28 +51,49 @@ class InicioSesionControlador extends Notifier<EstadoInicioSesion> {
             ? MensajesInicioSesion.completaAmbos
             : null,
       );
-      return null;
+      return;
     }
 
     state = const EstadoInicioSesion(enviando: true);
+    final cronometro = Stopwatch()..start();
     final resultado = await ref
         .read(sesionRepositorioProvider)
         .iniciarSesion(datos);
-    if (!ref.mounted) return null;
+    if (kDebugMode) {
+      debugPrint('Inicio de sesión: ${cronometro.elapsedMilliseconds} ms');
+    }
+    if (!ref.mounted) return;
 
     switch (resultado) {
-      case SesionIniciada(:final nombre):
+      case SesionIniciada(:final perfil):
         state = const EstadoInicioSesion();
-        return nombre;
+        ref.read(sesionProvider.notifier).iniciada(perfil);
       case SesionRechazada(:final mensaje):
         state = EstadoInicioSesion(aviso: mensaje);
-        return null;
+      case SesionBloqueada(:final hasta, :final minutos):
+        _bloquear(hasta, minutos);
     }
   }
 
+  /// CA10, CA11: deshabilita el formulario hasta que venza el bloqueo, y
+  /// entonces lo habilita de nuevo (CA12).
+  void _bloquear(DateTime hasta, int minutos) {
+    state = EstadoInicioSesion(
+      aviso: MensajesInicioSesion.cuentaBloqueada(minutos),
+      bloqueadoHasta: hasta,
+    );
+    _finBloqueo?.cancel();
+    final restante = hasta.difference(DateTime.now());
+    _finBloqueo = Timer(
+      restante.isNegative ? Duration.zero : restante,
+      () => state = const EstadoInicioSesion(),
+    );
+  }
+
   /// Al escribir de nuevo se quitan el error del campo y el aviso, para
-  /// poder reintentar (HU-002, CA9).
+  /// poder reintentar (CA9).
   void campoEditado(CampoInicioSesion campo) {
+    if (state.bloqueado) return;
     if (!state.errores.containsKey(campo) && state.aviso == null) return;
     state = EstadoInicioSesion(errores: Map.of(state.errores)..remove(campo));
   }

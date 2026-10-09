@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,9 +11,9 @@ import '../../../core/widgets/titulo_resaltado.dart';
 import '../domain/inicio_sesion.dart';
 import 'inicio_sesion_controlador.dart';
 
-/// Inicio de sesión con correo y contraseña. En HU-001 solo se usa para
-/// comprobar que el usuario registrado puede entrar (CA12); HU-002 agrega
-/// los roles, el bloqueo por intentos y la sesión persistente.
+/// Inicio de sesión con correo y contraseña (HU-002). Al entrar, las rutas
+/// llevan a la pantalla del rol; aquí solo se muestran los errores y el
+/// bloqueo por intentos fallidos (pantallas E1, E2 y E3 del prototipo).
 class InicioSesionPantalla extends ConsumerStatefulWidget {
   const InicioSesionPantalla({super.key});
 
@@ -36,15 +35,11 @@ class _InicioSesionPantallaState extends ConsumerState<InicioSesionPantalla> {
 
   Future<void> _iniciarSesion() async {
     FocusScope.of(context).unfocus();
-    final nombre = await ref
+    await ref
         .read(inicioSesionControladorProvider.notifier)
         .iniciarSesion(
           DatosInicioSesion(correo: _correo.text, contrasena: _contrasena.text),
         );
-    if (nombre != null && mounted) {
-      TextInput.finishAutofillContext();
-      context.go(Rutas.inicio, extra: nombre);
-    }
   }
 
   void _editado(CampoInicioSesion campo) =>
@@ -53,6 +48,7 @@ class _InicioSesionPantallaState extends ConsumerState<InicioSesionPantalla> {
   @override
   Widget build(BuildContext context) {
     final estado = ref.watch(inicioSesionControladorProvider);
+    final ocupado = estado.enviando || estado.bloqueado;
 
     return Scaffold(
       body: SafeArea(
@@ -76,7 +72,7 @@ class _InicioSesionPantallaState extends ConsumerState<InicioSesionPantalla> {
                 error: estado.errores[CampoInicioSesion.correo],
                 tipoTeclado: TextInputType.emailAddress,
                 autocompletar: const [AutofillHints.email],
-                habilitado: !estado.enviando,
+                habilitado: !ocupado,
                 alCambiar: (_) => _editado(CampoInicioSesion.correo),
               ),
               const SizedBox(height: 14),
@@ -90,13 +86,13 @@ class _InicioSesionPantallaState extends ConsumerState<InicioSesionPantalla> {
                 tipoTeclado: TextInputType.visiblePassword,
                 accionTeclado: TextInputAction.done,
                 autocompletar: const [AutofillHints.password],
-                habilitado: !estado.enviando,
+                habilitado: !ocupado,
                 alCambiar: (_) => _editado(CampoInicioSesion.contrasena),
                 alEnviar: (_) => _iniciarSesion(),
               ),
               const SizedBox(height: 20),
               FilledButton(
-                onPressed: estado.enviando ? null : _iniciarSesion,
+                onPressed: ocupado ? null : _iniciarSesion,
                 child: estado.enviando
                     ? const SizedBox.square(
                         dimension: 22,
@@ -104,6 +100,14 @@ class _InicioSesionPantallaState extends ConsumerState<InicioSesionPantalla> {
                       )
                     : const Text('INICIAR SESIÓN'),
               ),
+              if (estado.bloqueado) ...[
+                const SizedBox(height: 12),
+                const Text(
+                  MensajesInicioSesion.notaBloqueo,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.atenuado),
+                ),
+              ],
               const SizedBox(height: 32),
               Wrap(
                 alignment: WrapAlignment.center,

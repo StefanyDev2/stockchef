@@ -10,7 +10,9 @@
     "build": "tsc",
     "test": "tsc && node --test lib/test/unitarias/",
     "test:emulador": "tsc && node --test --test-concurrency=1 lib/test/emulador/",
-    "test:todo": "firebase emulators:exec --only auth,firestore --project demo-stockchef \"npm test && npm run test:emulador\""
+    "test:todo": "firebase emulators:exec --only auth,firestore --project demo-stockchef \"npm test && npm run test:emulador\"",
+    "emuladores": "npm run build && node herramientas/iniciar-emuladores.mjs",
+    "sembrar": "npm run build && node lib/herramientas/sembrar.js"
   },
   "dependencies": {
     "firebase-admin": "^13.10.0",

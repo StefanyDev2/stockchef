@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
+import { idBloqueo, minutosBloqueo } from "../../src/bloqueo";
 import { MENSAJES } from "../../src/mensajes";
 import {
   idRestaurante,
@@ -108,5 +109,29 @@ describe("normalización del restaurante (CA10)", () => {
     assert.equal(a, b);
     assert.notEqual(a, c);
     assert.match(a, /^[0-9a-f]{64}$/);
+  });
+});
+
+describe("bloqueo: configuración (HU-002)", () => {
+  it("el id del documento no tiene / y no depende de mayúsculas", () => {
+    assert.equal(idBloqueo(" Camila@Correo.com "), "camila%40correo.com");
+    assert.ok(!idBloqueo("raro/correo@x.co").includes("/"));
+  });
+
+  it("dura 120 minutos salvo que BLOQUEO_MINUTOS diga otra cosa", () => {
+    const anterior = process.env.BLOQUEO_MINUTOS;
+    try {
+      delete process.env.BLOQUEO_MINUTOS;
+      assert.equal(minutosBloqueo(), 120);
+      process.env.BLOQUEO_MINUTOS = "1";
+      assert.equal(minutosBloqueo(), 1);
+      for (const invalido of ["0", "-5", "abc", "1.5"]) {
+        process.env.BLOQUEO_MINUTOS = invalido;
+        assert.equal(minutosBloqueo(), 120, invalido);
+      }
+    } finally {
+      if (anterior === undefined) delete process.env.BLOQUEO_MINUTOS;
+      else process.env.BLOQUEO_MINUTOS = anterior;
+    }
   });
 });

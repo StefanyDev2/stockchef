@@ -1,39 +1,27 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
-
-/// Logo y nombre de la marca: "Stock" en tinta y "Chef" en naranja.
+/// Logo oficial de StockChef (gorro de chef, lista, insumos y el lema
+/// "Controla hoy, crece mañana."), en assets/imagenes/logo_stockchef.webp.
 class MarcaStockChef extends StatelessWidget {
-  const MarcaStockChef({super.key, this.tamano = 32});
+  const MarcaStockChef({super.key, this.ancho = 260});
 
-  final double tamano;
+  /// Ancho máximo del logo. En pantallas angostas se ajusta solo.
+  final double ancho;
+
+  static const ruta = 'assets/imagenes/logo_stockchef.webp';
 
   @override
   Widget build(BuildContext context) {
-    final estilo = TextStyle(
-      fontSize: tamano,
-      fontWeight: FontWeight.w800,
-      color: AppColors.tinta,
-    );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text('👨‍🍳', style: TextStyle(fontSize: tamano * 1.8)),
-        const SizedBox(height: 4),
-        Text.rich(
-          TextSpan(
-            text: 'Stock',
-            style: estilo,
-            children: const [
-              TextSpan(
-                text: 'Chef',
-                style: TextStyle(color: AppColors.naranjaMarca),
-              ),
-            ],
-          ),
-          semanticsLabel: 'StockChef',
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: ancho),
+      child: const AspectRatio(
+        aspectRatio: 1,
+        child: Image(
+          image: AssetImage(ruta),
+          fit: BoxFit.contain,
+          semanticLabel: 'StockChef',
         ),
-      ],
+      ),
     );
   }
 }

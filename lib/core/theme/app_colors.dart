@@ -19,6 +19,22 @@ abstract final class AppColors {
   /// "Chef" en la marca.
   static const naranjaMarca = Color(0xFFE8892B);
 
+  /// Fondo de avatares y del botón de menú.
+  static const mentaSuave = Color(0xFFDFF5E8);
+
+  /// Etiqueta del rol y botón "Cerrar sesión".
+  static const verdeFondo = Color(0xFFE6F8EE);
+  static const verdeTexto = Color(0xFF1F6F4C);
+
+  /// Círculo del aviso de cuenta sin rol.
+  static const ambarSuave = Color(0xFFFFF1C9);
+
+  /// Botón y campos deshabilitados (cuenta bloqueada).
+  static const deshabilitado = Color(0xFFE6E8EB);
+  static const deshabilitadoBorde = Color(0xFFD3D6DB);
+  static const deshabilitadoTexto = Color(0xFF9AA0A8);
+  static const campoDeshabilitado = Color(0xFFF1F2F4);
+
   static const error = Color(0xFFE03E3E);
   static const errorFondo = Color(0xFFFDE4E4);
 
