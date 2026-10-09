@@ -46,12 +46,11 @@ En `flutter doctor -v` deben salir en verde **Flutter**, **Android toolchain** y
 ### 2. Descarga el código
 
 ```bash
-git clone https://github.com/<usuario>/stockchef.git
+git clone https://github.com/StefanyDev2/stockchef.git
 cd stockchef
 git checkout feature/hu-002-inicio-sesion
 ```
 
-(La dirección exacta está en el botón verde **Code** del repositorio.)
 
 ### 3. Conecta la app con Firebase
 
