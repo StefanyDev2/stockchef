@@ -10,13 +10,7 @@ Proyecto universitario de Ingeniería de Software (Scrum).
 
 ## Ramas
 
-| Rama | Contenido |
-|---|---|
-| `main` | Versión aprobada |
-| `feature/hu-001-registro` | HU-001 completa |
-| `feature/hu-002-inicio-sesion` | HU-001 + HU-002 completas (**la más reciente**) |
-
-Mientras los pull requests no se aprueben, para ver todo usa `feature/hu-002-inicio-sesion`.
+Todo el Sprint 1 (HU-001 y HU-002) está en **`main`**. Cada historia se trabaja en su propia rama (`feature/...`) y entra a `main` con un pull request.
 
 ---
 
@@ -48,9 +42,7 @@ En `flutter doctor -v` deben salir en verde **Flutter**, **Android toolchain** y
 ```bash
 git clone https://github.com/StefanyDev2/stockchef.git
 cd stockchef
-git checkout feature/hu-002-inicio-sesion
 ```
-
 
 ### 3. Conecta la app con Firebase
 
