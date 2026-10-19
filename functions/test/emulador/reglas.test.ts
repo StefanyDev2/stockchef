@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { after, before, beforeEach, describe, it } from "node:test";
@@ -9,12 +10,16 @@ import {
   type RulesTestEnvironment,
 } from "@firebase/rules-unit-testing";
 import {
+  collection,
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
+  query,
   setLogLevel,
   setDoc,
   updateDoc,
+  where,
 } from "firebase/firestore";
 
 import { exigirEmuladores, PROYECTO } from "./entorno";
@@ -119,6 +124,43 @@ describe("reglas de Firestore", () => {
 
     it("nadie borra perfiles desde la app", async () => {
       await assertFails(deleteDoc(doc(como("admin"), "users/sinRol")));
+    });
+  });
+
+  describe("lista de usuarios del restaurante (HU-003)", () => {
+    const usuariosDe = (uid: string | undefined, restaurantId: string) =>
+      getDocs(
+        query(
+          collection(como(uid), "users"),
+          where("restaurantId", "==", restaurantId),
+        ),
+      );
+
+    it("CA1: el administrador consulta la lista de su restaurante", async () => {
+      const lista = await assertSucceeds(usuariosDe("admin", SABOR));
+      assert.equal(lista.size, 4);
+    });
+
+    it("CA9: un auxiliar o un usuario sin rol no pueden consultar la lista", async () => {
+      await assertFails(usuariosDe("auxiliar", SABOR));
+      await assertFails(usuariosDe("sinRol", SABOR));
+    });
+
+    it("CA9: un administrador desactivado tampoco", async () => {
+      await assertFails(usuariosDe("adminInactivo", SABOR));
+    });
+
+    it("un administrador no consulta la lista de otro restaurante", async () => {
+      await assertFails(usuariosDe("adminOtro", SABOR));
+    });
+
+    it("sin filtrar por restaurante no se puede leer toda la colección", async () => {
+      await assertFails(getDocs(collection(como("admin"), "users")));
+    });
+
+    it("CA9: ni el administrador cambia roles desde la app (lo hace la función)", async () => {
+      await assertFails(updateDoc(doc(como("admin"), "users/sinRol"), { rol: "auxiliar_cocina" }));
+      await assertFails(updateDoc(doc(como("admin"), "users/auxiliar"), { activo: false }));
     });
   });
 
