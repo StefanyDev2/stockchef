@@ -48,6 +48,7 @@ const USUARIOS: Prueba[] = [
   { nombres: "Camila", apellidos: "Ruiz", correo: "camila@correo.com", rol: "administrador", activo: true },
   { nombres: "Daniela", apellidos: "Torres", correo: "daniela@correo.com", rol: "auxiliar_cocina", activo: true },
   { nombres: "Andrés", apellidos: "Gómez", correo: "andres@correo.com", rol: null, activo: true },
+  { nombres: "Laura", apellidos: "Pérez", correo: "laura@correo.com", rol: "auxiliar_cocina", activo: true },
   { nombres: "Pedro", apellidos: "Díaz", correo: "pedro@correo.com", rol: "auxiliar_cocina", activo: false },
 ];
 

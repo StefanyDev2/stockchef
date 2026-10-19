@@ -3,14 +3,14 @@
 Control de compras, consumo y pérdidas de insumos para restaurantes pequeños de menú del día.
 Proyecto universitario de Ingeniería de Software (Scrum).
 
-**Sprint 1:** HU-001 (Registro de usuario) y HU-002 (Inicio de sesión). App móvil Android hecha en Flutter, con Firebase (Authentication, Firestore y Cloud Functions).
+**Historias:** HU-001 (Registro de usuario), HU-002 (Inicio de sesión) y HU-003 (Asignación de roles). App móvil Android hecha en Flutter, con Firebase (Authentication, Firestore y Cloud Functions).
 
 - Historias de usuario, prototipos y modelo de datos: [`docs/`](docs/)
 - Contexto, alcance y reglas de trabajo: [`CLAUDE.md`](CLAUDE.md)
 
 ## Ramas
 
-Todo el Sprint 1 (HU-001 y HU-002) está en **`main`**. Cada historia se trabaja en su propia rama (`feature/...`) y entra a `main` con un pull request.
+Lo terminado está en **`main`**. Cada historia se trabaja en su propia rama (`feature/...`) y entra a `main` con un pull request.
 
 ---
 
@@ -95,9 +95,10 @@ npm run sembrar
 
 | Correo | Qué ve al entrar |
 |---|---|
-| `camila@correo.com` | Administradora: Compras, Insumos, Menú, Reportes, Usuarios |
+| `camila@correo.com` | Administradora: Compras, Insumos, Menú, Reportes y **Usuarios**, donde asigna roles y desactiva cuentas |
 | `daniela@correo.com` | Auxiliar de cocina: Consumo del día, Pérdidas, Platos vendidos, Menú del día |
 | `andres@correo.com` | Cuenta sin rol: solo el aviso de rol pendiente |
+| `laura@correo.com` | Auxiliar de cocina |
 | `pedro@correo.com` | Cuenta desactivada: no puede entrar |
 
 Todos usan la contraseña `Cocina12` y el restaurante "Sabor Casero". Solo existen en el emulador de tu computador: cada una tiene los suyos.
