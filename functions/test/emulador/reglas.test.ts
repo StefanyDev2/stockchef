@@ -73,6 +73,8 @@ describe("reglas de Firestore", () => {
       await setDoc(doc(db, "users/adminInactivo"), perfil(SABOR, "administrador", false));
       await setDoc(doc(db, "users/adminOtro"), perfil(OTRO, "administrador"));
       await setDoc(doc(db, `restaurants/${SABOR}`), { nombre: "Sabor Casero" });
+      await setDoc(doc(db, `restaurants/${SABOR}/insumos/tomate`), { nombre: "Tomate", activo: true });
+      await setDoc(doc(db, `restaurants/${SABOR}/compras/c1`), { insumoId: "tomate" });
       await setDoc(doc(db, "loginLockouts/camila@correo,com"), { intentosFallidos: 1 });
     });
   });
@@ -161,6 +163,31 @@ describe("reglas de Firestore", () => {
     it("CA9: ni el administrador cambia roles desde la app (lo hace la función)", async () => {
       await assertFails(updateDoc(doc(como("admin"), "users/sinRol"), { rol: "auxiliar_cocina" }));
       await assertFails(updateDoc(doc(como("admin"), "users/auxiliar"), { activo: false }));
+    });
+  });
+
+  describe("insumos y compras (HU-006)", () => {
+    const insumos = (uid?: string) =>
+      getDocs(collection(como(uid), `restaurants/${SABOR}/insumos`));
+    const compras = (uid?: string) =>
+      getDocs(collection(como(uid), `restaurants/${SABOR}/compras`));
+
+    it("el administrador ve los insumos y el historial de compras", async () => {
+      assert.equal((await assertSucceeds(insumos("admin"))).size, 1);
+      assert.equal((await assertSucceeds(compras("admin"))).size, 1);
+    });
+
+    it("CA12: auxiliar, sin rol, desactivado, otro restaurante o sin sesión no", async () => {
+      for (const uid of ["auxiliar", "sinRol", "adminInactivo", "adminOtro", undefined]) {
+        await assertFails(insumos(uid));
+        await assertFails(compras(uid));
+      }
+    });
+
+    it("nadie crea compras ni cambia cantidades desde la app", async () => {
+      const db = como("admin");
+      await assertFails(setDoc(doc(db, `restaurants/${SABOR}/compras/c2`), { insumoId: "tomate" }));
+      await assertFails(updateDoc(doc(db, `restaurants/${SABOR}/insumos/tomate`), { cantidadDisponible: 999 }));
     });
   });
 

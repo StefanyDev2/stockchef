@@ -8,6 +8,7 @@ import {
   registrarIngreso as ingreso,
   registrarIntentoFallido as intentoFallido,
 } from "./bloqueo";
+import { registrarCompra as compra } from "./compras";
 import { registrarUsuario as registrar } from "./registro";
 import {
   asignarRol as asignar,
@@ -43,4 +44,9 @@ export const asignarRol = onCall((request) =>
 /** HU-003: el administrador desactiva o reactiva a un usuario. */
 export const cambiarEstadoUsuario = onCall((request) =>
   cambiarEstado(request.data, request.auth?.uid, getFirestore(), getAuth()),
+);
+
+/** HU-006: el administrador registra una compra de insumos. */
+export const registrarCompra = onCall((request) =>
+  compra(request.data, request.auth?.uid, getFirestore()),
 );
