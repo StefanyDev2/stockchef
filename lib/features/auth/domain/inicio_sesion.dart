@@ -10,7 +10,7 @@ abstract final class MensajesInicioSesion {
   /// Siempre el mismo mensaje, sin decir si falló el correo o la contraseña.
   static const credencialesInvalidas = 'Las credenciales no son válidas';
   static const cuentaDesactivada =
-      'Tu cuenta está desactivada. Comunícate con un administrador.';
+      'Tu cuenta está inactiva. Comunícate con un administrador.';
   static const notaBloqueo =
       'Mientras la cuenta esté bloqueada no podrás ingresar, aunque tus '
       'credenciales sean correctas.';

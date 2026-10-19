@@ -24,6 +24,7 @@ class PerfilUsuario {
     required this.nombres,
     required this.apellidos,
     required this.correo,
+    required this.restaurantId,
     required this.rol,
     required this.activo,
   });
@@ -38,6 +39,7 @@ class PerfilUsuario {
       nombres: texto('nombres'),
       apellidos: texto('apellidos'),
       correo: texto('correo'),
+      restaurantId: texto('restaurantId'),
       rol: Rol.desdeFirestore(datos['rol']),
       activo: datos['activo'] == true,
     );
@@ -47,6 +49,11 @@ class PerfilUsuario {
   final String nombres;
   final String apellidos;
   final String correo;
+
+  /// Restaurante al que pertenece (HU-003: el administrador ve los usuarios
+  /// de su mismo restaurante).
+  final String restaurantId;
+
   final Rol rol;
   final bool activo;
 

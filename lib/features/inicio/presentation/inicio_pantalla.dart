@@ -72,6 +72,20 @@ class _Funciones extends StatelessWidget {
 
   final PerfilUsuario perfil;
 
+  /// Abre la función si ya está construida; si no, avisa "próximamente".
+  void _abrir(BuildContext context, FuncionDelRol funcion) {
+    final ruta = funcion.ruta;
+    if (ruta != null) {
+      context.push(ruta);
+      return;
+    }
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text('${funcion.nombre}: próximamente')),
+      );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -109,13 +123,8 @@ class _Funciones extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              // En el Sprint 1 las funciones solo se muestran.
-              onPressed: () => ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  SnackBar(content: Text('$funcion: próximamente')),
-                ),
-              child: Text(funcion),
+              onPressed: () => _abrir(context, funcion),
+              child: Text(funcion.nombre),
             ),
           ),
       ],
