@@ -9,15 +9,21 @@ class FuncionDelRol {
   final String? ruta;
 }
 
-/// Ruta de la pantalla de usuarios (HU-003). Es la misma de `Rutas.usuarios`;
-/// se repite aquí para que el dominio no dependa de las rutas.
+// Rutas de las funciones ya construidas. Son las mismas de `Rutas`; se
+// repiten aquí para que el dominio no dependa de las rutas.
+
+/// Pantalla de usuarios (HU-003).
 const rutaUsuarios = '/inicio/usuarios';
 
+/// Registro de compras (HU-006).
+const rutaCompras = '/inicio/compras';
+
 /// Funciones que ve cada rol en su pantalla principal (HU-002, CA6 y CA7).
-/// "Usuarios" solo la ve el administrador (HU-003, CA8).
+/// "Usuarios" (HU-003, CA8) y "Compras" (HU-006, CA12) solo las ve el
+/// administrador.
 List<FuncionDelRol> funcionesDe(Rol rol) => switch (rol) {
   Rol.administrador => const [
-    FuncionDelRol('Compras'),
+    FuncionDelRol('Compras', ruta: rutaCompras),
     FuncionDelRol('Insumos'),
     FuncionDelRol('Menú'),
     FuncionDelRol('Reportes'),

@@ -8,6 +8,9 @@ import '../../features/auth/presentation/cuenta_creada_pantalla.dart';
 import '../../features/auth/presentation/inicio_sesion_pantalla.dart';
 import '../../features/auth/presentation/registro_pantalla.dart';
 import '../../features/auth/presentation/sesion_controlador.dart';
+import '../../features/compras/domain/compras.dart';
+import '../../features/compras/presentation/compra_pantalla.dart';
+import '../../features/compras/presentation/historial_compras_pantalla.dart';
 import '../../features/inicio/presentation/inicio_pantalla.dart';
 import '../../features/inicio/presentation/mi_cuenta_pantalla.dart';
 import '../../features/usuarios/presentation/detalle_usuario_pantalla.dart';
@@ -25,6 +28,8 @@ abstract final class Rutas {
   static const usuarios = '/inicio/usuarios';
   static String detalleUsuario(String uid) => '$usuarios/$uid';
   static const sinPermiso = '/inicio/sin-permiso';
+  static const compras = '/inicio/compras';
+  static const historialCompras = '$compras/historial';
 
   /// Se ven sin haber iniciado sesión.
   static const publicas = {inicioSesion, registro, cuentaCreada};
@@ -98,6 +103,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'sin-permiso',
             builder: (context, state) => const SinPermisoPantalla(),
+          ),
+          GoRoute(
+            path: 'compras',
+            builder: (context, state) => soloAdministrador(
+              (perfil) => CompraPantalla(administrador: perfil),
+            ),
+            routes: [
+              GoRoute(
+                path: 'historial',
+                builder: (context, state) => soloAdministrador(
+                  (perfil) => HistorialComprasPantalla(
+                    administrador: perfil,
+                    recienGuardada: state.extra as Compra?,
+                  ),
+                ),
+              ),
+            ],
           ),
           GoRoute(
             path: 'usuarios',

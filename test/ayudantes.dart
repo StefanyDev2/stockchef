@@ -7,6 +7,9 @@ import 'package:stockchef/app.dart';
 import 'package:stockchef/features/auth/domain/inicio_sesion.dart';
 import 'package:stockchef/features/auth/domain/perfil_usuario.dart';
 import 'package:stockchef/features/auth/presentation/sesion_controlador.dart';
+import 'package:stockchef/features/compras/domain/compras.dart';
+import 'package:stockchef/features/compras/domain/unidades.dart';
+import 'package:stockchef/features/compras/presentation/compras_providers.dart';
 import 'package:stockchef/features/usuarios/domain/usuarios.dart';
 import 'package:stockchef/features/usuarios/presentation/usuarios_providers.dart';
 
@@ -70,6 +73,7 @@ Future<void> abrirApp(
   WidgetTester tester, {
   SesionFalsa? sesion,
   UsuariosFalsos? usuarios,
+  ComprasFalsas? compras,
   Size tamano = const Size(1080, 2400),
 }) async {
   tester.view.physicalSize = tamano;
@@ -81,6 +85,9 @@ Future<void> abrirApp(
         sesionRepositorioProvider.overrideWithValue(sesion ?? SesionFalsa()),
         usuariosRepositorioProvider.overrideWithValue(
           usuarios ?? UsuariosFalsos(),
+        ),
+        comprasRepositorioProvider.overrideWithValue(
+          compras ?? ComprasFalsas(),
         ),
       ],
       child: const StockChefApp(),
@@ -141,5 +148,69 @@ class UsuariosFalsos implements UsuariosRepositorio {
   }) async {
     llamadas.add('cambiarEstado $uid $activo');
     return _cambiar(uid, activo: activo);
+  }
+}
+
+/// Insumos y compras en memoria. Guarda como lo haría el servidor (sin
+/// convertir unidades), salvo que `respuesta` diga otra cosa.
+class ComprasFalsas implements ComprasRepositorio {
+  ComprasFalsas([List<Insumo>? insumos])
+    : insumos =
+          insumos ??
+          const [
+            Insumo(
+              id: 'tomate',
+              nombre: 'Tomate',
+              unidad: UnidadMedida.kilogramo,
+              cantidadDisponible: 5,
+            ),
+            Insumo(
+              id: 'aceite',
+              nombre: 'Aceite',
+              unidad: UnidadMedida.litro,
+              cantidadDisponible: 3,
+            ),
+          ];
+
+  final List<Insumo> insumos;
+  final guardadas = <Compra>[];
+  final enviados = <Map<String, Object?>>[];
+  final _cambios = StreamController<List<Compra>>.broadcast();
+
+  ResultadoCompra? respuesta;
+
+  @override
+  Stream<List<Insumo>> insumosActivos(String restaurantId) =>
+      Stream.value(insumos);
+
+  @override
+  Stream<List<Compra>> compras(String restaurantId) async* {
+    yield guardadas.reversed.toList();
+    yield* _cambios.stream;
+  }
+
+  @override
+  Future<ResultadoCompra> registrar(DatosCompra datos) async {
+    enviados.add(datos.aEnvio());
+    if (respuesta != null) return respuesta!;
+    final envio = datos.aEnvio();
+    final insumo = insumos.firstWhere((i) => i.id == datos.insumoId);
+    final cantidad = envio['cantidad']! as double;
+    final precio = envio['precioTotal']! as double;
+    final compra = Compra(
+      id: 'c${guardadas.length + 1}',
+      insumoNombre: insumo.nombre,
+      tipo: datos.tipo,
+      cantidad: cantidad,
+      unidad: datos.unidad!,
+      proveedor: envio['proveedor'] as String?,
+      precioTotal: precio,
+      precioUnitario: precio / cantidad,
+      cantidadDisponibleDespues: insumo.cantidadDisponible + cantidad,
+      unidadInsumo: insumo.unidad,
+    );
+    guardadas.add(compra);
+    _cambios.add(guardadas.reversed.toList());
+    return CompraGuardada(compra);
   }
 }
