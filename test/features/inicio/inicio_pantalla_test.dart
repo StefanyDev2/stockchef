@@ -82,10 +82,10 @@ void main() {
   ) async {
     await abrirApp(tester, sesion: SesionFalsa(guardada: perfilDePrueba()));
 
-    await tester.tap(find.text('Compras'));
+    await tester.tap(find.text('Insumos'));
     await tester.pump();
 
-    expect(find.text('Compras: próximamente'), findsOneWidget);
+    expect(find.text('Insumos: próximamente'), findsOneWidget);
   });
 
   testWidgets(

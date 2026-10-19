@@ -5,6 +5,8 @@ import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 
+import { entornoConJava21 } from "./entorno-java.mjs";
+
 const raiz = resolve(import.meta.dirname, "..", "..");
 const datos = join(raiz, ".emulador-datos");
 
@@ -14,18 +16,7 @@ if (existsSync(join(datos, "firebase-export-metadata.json"))) {
 }
 args.push("--export-on-exit", datos);
 
-// El emulador de Firestore necesita Java 21 o más. En Windows se usa el que
-// trae Android Studio, solo para este proceso: no cambia el JAVA_HOME del
-// sistema, que otros proyectos pueden necesitar (por ejemplo, Java 8).
-const entorno = { ...process.env };
-const jbr = join("C:", "Program Files", "Android", "Android Studio", "jbr");
-if (process.platform === "win32" && existsSync(jbr)) {
-  entorno.JAVA_HOME = jbr;
-  // En Windows la variable puede llamarse Path o PATH; se usa la que exista.
-  const clave =
-    Object.keys(entorno).find((k) => k.toUpperCase() === "PATH") ?? "Path";
-  entorno[clave] = `${join(jbr, "bin")};${entorno[clave] ?? ""}`;
-}
+const entorno = entornoConJava21();
 
 const firebase = spawn("firebase", args, {
   cwd: raiz,

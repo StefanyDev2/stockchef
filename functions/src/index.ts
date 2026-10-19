@@ -8,7 +8,12 @@ import {
   registrarIngreso as ingreso,
   registrarIntentoFallido as intentoFallido,
 } from "./bloqueo";
+import { registrarCompra as compra } from "./compras";
 import { registrarUsuario as registrar } from "./registro";
+import {
+  asignarRol as asignar,
+  cambiarEstadoUsuario as cambiarEstado,
+} from "./usuarios";
 
 /** Misma región de la base de datos Firestore. La app usa este valor. */
 export const REGION = "southamerica-east1";
@@ -29,4 +34,19 @@ export const registrarIntentoFallido = onCall((request) =>
 /** HU-002: confirma que la cuenta no está bloqueada y reinicia el contador. */
 export const registrarIngreso = onCall((request) =>
   ingreso(request.auth?.token.email, getFirestore()),
+);
+
+/** HU-003: el administrador asigna o cambia el rol de un usuario. */
+export const asignarRol = onCall((request) =>
+  asignar(request.data, request.auth?.uid, getFirestore()),
+);
+
+/** HU-003: el administrador desactiva o reactiva a un usuario. */
+export const cambiarEstadoUsuario = onCall((request) =>
+  cambiarEstado(request.data, request.auth?.uid, getFirestore(), getAuth()),
+);
+
+/** HU-006: el administrador registra una compra de insumos. */
+export const registrarCompra = onCall((request) =>
+  compra(request.data, request.auth?.uid, getFirestore()),
 );

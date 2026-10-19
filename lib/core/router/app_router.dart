@@ -8,8 +8,14 @@ import '../../features/auth/presentation/cuenta_creada_pantalla.dart';
 import '../../features/auth/presentation/inicio_sesion_pantalla.dart';
 import '../../features/auth/presentation/registro_pantalla.dart';
 import '../../features/auth/presentation/sesion_controlador.dart';
+import '../../features/compras/domain/compras.dart';
+import '../../features/compras/presentation/compra_pantalla.dart';
+import '../../features/compras/presentation/historial_compras_pantalla.dart';
 import '../../features/inicio/presentation/inicio_pantalla.dart';
 import '../../features/inicio/presentation/mi_cuenta_pantalla.dart';
+import '../../features/usuarios/presentation/detalle_usuario_pantalla.dart';
+import '../../features/usuarios/presentation/sin_permiso_pantalla.dart';
+import '../../features/usuarios/presentation/usuarios_pantalla.dart';
 
 /// Rutas de la app. Cada funcionalidad agrega aquí las suyas.
 abstract final class Rutas {
@@ -19,6 +25,11 @@ abstract final class Rutas {
   static const cuentaCreada = '/cuenta-creada';
   static const inicio = '/inicio';
   static const miCuenta = '/inicio/mi-cuenta';
+  static const usuarios = '/inicio/usuarios';
+  static String detalleUsuario(String uid) => '$usuarios/$uid';
+  static const sinPermiso = '/inicio/sin-permiso';
+  static const compras = '/inicio/compras';
+  static const historialCompras = '$compras/historial';
 
   /// Se ven sin haber iniciado sesión.
   static const publicas = {inicioSesion, registro, cuentaCreada};
@@ -46,6 +57,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ConSesion(:final perfil) => pantalla(perfil),
         _ => const CargandoPantalla(),
       };
+
+  /// HU-003, CA8 y CA9: las pantallas de administración solo las ve un
+  /// administrador. Cualquier otro rol ve "No tienes permisos" aunque llegue
+  /// a la ruta.
+  Widget soloAdministrador(Widget Function(PerfilUsuario perfil) pantalla) =>
+      conPerfil(
+        (perfil) => perfil.rol == Rol.administrador
+            ? pantalla(perfil)
+            : const SinPermisoPantalla(),
+      );
 
   final router = GoRouter(
     initialLocation: Rutas.cargando,
@@ -78,6 +99,44 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: 'mi-cuenta',
             builder: (context, state) =>
                 conPerfil((perfil) => MiCuentaPantalla(perfil: perfil)),
+          ),
+          GoRoute(
+            path: 'sin-permiso',
+            builder: (context, state) => const SinPermisoPantalla(),
+          ),
+          GoRoute(
+            path: 'compras',
+            builder: (context, state) => soloAdministrador(
+              (perfil) => CompraPantalla(administrador: perfil),
+            ),
+            routes: [
+              GoRoute(
+                path: 'historial',
+                builder: (context, state) => soloAdministrador(
+                  (perfil) => HistorialComprasPantalla(
+                    administrador: perfil,
+                    recienGuardada: state.extra as Compra?,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: 'usuarios',
+            builder: (context, state) => soloAdministrador(
+              (perfil) => UsuariosPantalla(administrador: perfil),
+            ),
+            routes: [
+              GoRoute(
+                path: ':uid',
+                builder: (context, state) => soloAdministrador(
+                  (perfil) => DetalleUsuarioPantalla(
+                    administrador: perfil,
+                    uid: state.pathParameters['uid']!,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

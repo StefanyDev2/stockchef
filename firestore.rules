@@ -43,6 +43,19 @@ service cloud.firestore {
         && existeMiPerfil()
         && miPerfil().restaurantId == restaurantId;
       allow write: if false;
+
+      // HU-006: el administrador ve los insumos activos para elegir uno al
+      // registrar una compra, y el historial de compras. Solo la Cloud
+      // Function registrarCompra escribe compras y cantidades.
+      match /insumos/{insumoId} {
+        allow read: if autenticado() && soyAdministradorDe(restaurantId);
+        allow write: if false;
+      }
+
+      match /compras/{compraId} {
+        allow read: if autenticado() && soyAdministradorDe(restaurantId);
+        allow write: if false;
+      }
     }
 
     match /loginLockouts/{correo} {
