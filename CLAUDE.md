@@ -6,11 +6,11 @@ El problema que resuelve: los dueños compran por costumbre, cocinan sin recetas
 
 ## Alcance de esta etapa (Sprint 1)
 
-Solo se construyen **HU-001 (Registro de usuario)** y **HU-002 (Inicio de sesión)**.
-No construir nada de HU-003 en adelante (roles, compras, pérdidas, menú, reportes), salvo lo mínimo para que HU-001 y HU-002 funcionen.
+Se construyen **HU-001 (Registro de usuario)**, **HU-002 (Inicio de sesión)** y **HU-003 (Asignación de roles)**.
+No construir nada de HU-004 en adelante (compras, pérdidas, menú, reportes), salvo lo mínimo para que estas historias funcionen.
 
-- Especificación y criterios de aceptación: `docs/HU-001-registro-usuario.md` y `docs/HU-002-inicio-sesion.md`
-- Prototipos visuales (abrir en el navegador): `docs/prototipos/hu001_registro_usuario_prototipo.html` y `docs/prototipos/hu002_inicio_sesion_prototipo.html`
+- Especificación y criterios de aceptación: `docs/HU-001-registro-usuario.md`, `docs/HU-002-inicio-sesion.md` y `docs/HU-003-asignacion-roles.md`
+- Prototipos visuales: `docs/prototipos/hu001_registro_usuario_prototipo.html`, `docs/prototipos/hu002_inicio_sesion_prototipo.html` (abrir en el navegador) y `docs/prototipos/hu003/` (capturas de Miro)
 - Modelo de datos y reglas: `docs/modelo-datos.md`
 
 El prototipo manda sobre cualquier suposición de diseño. Cada pantalla trae la etiqueta de los criterios de aceptación (CA) que cubre.
