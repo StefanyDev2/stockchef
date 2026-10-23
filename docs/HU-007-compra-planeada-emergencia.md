@@ -21,11 +21,11 @@ Yo como auxiliar de cocina quiero diferenciar las compras planeadas de las compr
 | CA | Desde HU-006 | En HU-007 |
 |---|---|---|
 | 1 | Botones Planeada / Emergencia (solo administrador) | El **auxiliar de cocina** también registra compras, desde "Registrar compra" |
-| 2 | Decía "Emergencia" | Dice **"De emergencia"** |
+| 2 | Botones "Planeada" y "Emergencia" | Se mantiene **"Emergencia"** en el botón (decisión del equipo) |
 | 3 | "Planeada" viene marcada | Se mantiene así, y el **servidor rechaza** una compra sin tipo |
 | 4 | Se guarda `tipo` con la compra | — |
 | 5 | Etiqueta en el historial | El auxiliar también consulta el historial |
-| 6 | Solo la etiqueta | Filtro **Todas / Planeadas / De emergencia** y resumen con cantidad de compras y total en pesos de cada tipo (administrador) |
+| 6 | Solo la etiqueta | Filtro **Todas / Planeadas / Emergencia** y resumen con cantidad de compras y total en pesos de cada tipo (administrador) |
 
 ## Decisiones tomadas
 
