@@ -54,7 +54,7 @@ class Insumo {
 }
 
 /// Campos obligatorios del formulario (CA2).
-enum CampoCompra { insumo, cantidad, unidad, precio }
+enum CampoCompra { insumo, cantidad, unidad, precio, tipo }
 
 /// Lo que se escribió en el formulario de compra.
 class DatosCompra {
@@ -64,7 +64,7 @@ class DatosCompra {
     this.unidad,
     this.proveedor = '',
     this.precio = '',
-    this.tipo = TipoCompra.planeada,
+    this.tipo,
   });
 
   final String? insumoId;
@@ -72,7 +72,9 @@ class DatosCompra {
   final UnidadMedida? unidad;
   final String proveedor;
   final String precio;
-  final TipoCompra tipo;
+
+  /// HU-007, CA3: obligatorio; no viene marcado.
+  final TipoCompra? tipo;
 
   /// CA5 y CA6: primero los campos pendientes; si no falta ninguno, que
   /// cantidad y precio sean números mayores a cero.
@@ -85,6 +87,7 @@ class DatosCompra {
       if (unidad == null) CampoCompra.unidad: MensajesCompras.campoObligatorio,
       if (precio.trim().isEmpty)
         CampoCompra.precio: MensajesCompras.campoObligatorio,
+      if (tipo == null) CampoCompra.tipo: MensajesCompras.campoObligatorio,
     };
     if (errores.isNotEmpty) {
       return ValidacionCompra(errores, MensajesCompras.camposPendientes);
@@ -109,7 +112,7 @@ class DatosCompra {
     'unidad': unidad!.valor,
     'proveedor': proveedor.trim().isEmpty ? null : proveedor.trim(),
     'precioTotal': leerPrecio(precio),
-    'tipo': tipo.name,
+    'tipo': tipo!.name,
   };
 }
 

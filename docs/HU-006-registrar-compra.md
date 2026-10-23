@@ -33,7 +33,7 @@ Yo como auxiliar de cocina quiero registrar las compras de insumos indicando pro
 ## Decisiones tomadas
 
 - **Quién:** al principio solo el administrador; desde HU-007, el administrador y el auxiliar de cocina. El servidor exige un rol activo.
-- **Tipo de compra:** el selector "Planeada / Emergencia" del prototipo se incluye, con "Planeada" por defecto. Servirá para la pérdida por compra de emergencia.
+- **Tipo de compra:** el selector "Planeada / Emergencia" del prototipo se incluye. Desde HU-007 ninguno viene marcado y es obligatorio. Servirá para la pérdida por compra de emergencia.
 - **Unidades:** cada insumo tiene su unidad. Si la compra viene en otra unidad del mismo tipo, se convierte antes de sumar: 1 kg = 1000 g, 1 lb = 453,592 g, 1 L = 1000 mL. Si no se puede convertir (por ejemplo, kilogramos a litros), se informa y no se guarda.
 - **Precio por unidad (CA9):** precio total ÷ cantidad, en la unidad en que se registró la compra.
 - **Estado del insumo (CA10):** si la nueva cantidad disponible es mayor que el nivel mínimo, el estado pasa a "Disponible"; si no, se deja como estaba.

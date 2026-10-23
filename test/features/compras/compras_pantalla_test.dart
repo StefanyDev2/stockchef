@@ -39,7 +39,13 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> llenarTomate(WidgetTester tester) async {
+  /// Llena la compra de tomate. El tipo es obligatorio (HU-007, CA3).
+  Future<void> llenarTomate(
+    WidgetTester tester, {
+    String tipo = 'Planeada',
+  }) async {
+    await tester.tap(find.text(tipo));
+    await tester.pump();
     await elegir(tester, 'insumo', 'Tomate');
     await tester.enterText(_texto('cantidad'), '10');
     await tester.enterText(_texto('proveedor'), 'Distrialimentos');
@@ -109,8 +115,44 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(MensajesCompras.camposPendientes), findsOneWidget);
-    expect(find.text(MensajesCompras.campoObligatorio), findsNWidgets(4));
+    // Insumo, cantidad, unidad, precio y tipo de compra (HU-007, CA3).
+    expect(find.text(MensajesCompras.campoObligatorio), findsNWidgets(5));
     expect(compras.enviados, isEmpty);
+  });
+
+  testWidgets('HU-007, CA3: ningún tipo viene marcado y es obligatorio', (
+    tester,
+  ) async {
+    await abrirCompras(tester);
+    // Todo lleno menos el tipo: si alguno viniera marcado, se guardaría.
+    await elegir(tester, 'insumo', 'Tomate');
+    await tester.enterText(_texto('cantidad'), '10');
+    await tester.enterText(_texto('precio'), '50000');
+    await tester.tap(_guardar);
+    await tester.pumpAndSettle();
+
+    expect(find.text(MensajesCompras.camposPendientes), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.ancestor(
+          of: find.byKey(const Key('campo-tipo')),
+          matching: find.byType(ListView),
+        ),
+        matching: find.text(MensajesCompras.campoObligatorio),
+      ),
+      findsOneWidget,
+    );
+    expect(compras.enviados, isEmpty);
+
+    // Al elegir el tipo, la alerta se va y ya se puede guardar.
+    await tester.tap(find.text('Emergencia'));
+    await tester.pump();
+    expect(find.text(MensajesCompras.campoObligatorio), findsNothing);
+    expect(find.text(MensajesCompras.camposPendientes), findsNothing);
+
+    await tester.tap(_guardar);
+    await tester.pumpAndSettle();
+    expect(compras.enviados.single['tipo'], 'emergencia');
   });
 
   testWidgets('CA6: cantidad o precio en cero no se envían', (tester) async {
@@ -155,9 +197,7 @@ void main() {
 
   testWidgets('una compra de emergencia queda marcada así', (tester) async {
     await abrirCompras(tester);
-    await tester.tap(find.text('Emergencia'));
-    await tester.pump();
-    await llenarTomate(tester);
+    await llenarTomate(tester, tipo: 'Emergencia');
 
     await tester.tap(_guardar);
     await tester.pumpAndSettle();
@@ -243,9 +283,7 @@ void main() {
 
       await tester.tap(find.text('Registrar compra'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Emergencia'));
-      await tester.pump();
-      await llenarTomate(tester);
+      await llenarTomate(tester, tipo: 'Emergencia');
       await tester.tap(_guardar);
       await tester.pumpAndSettle();
 
@@ -280,11 +318,7 @@ void main() {
       required bool emergencia,
       required String precio,
     }) async {
-      if (emergencia) {
-        await tester.tap(find.text('Emergencia'));
-        await tester.pump();
-      }
-      await llenarTomate(tester);
+      await llenarTomate(tester, tipo: emergencia ? 'Emergencia' : 'Planeada');
       await tester.enterText(_texto('precio'), precio);
       await tester.tap(_guardar);
       await tester.pumpAndSettle();

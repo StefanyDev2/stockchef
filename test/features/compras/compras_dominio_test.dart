@@ -11,6 +11,7 @@ void main() {
     unidad: UnidadMedida.kilogramo,
     proveedor: '  Distrialimentos ',
     precio: r'$50.000',
+    tipo: TipoCompra.planeada,
   );
 
   group('validar (CA2, CA5, CA6)', () {
@@ -26,6 +27,7 @@ void main() {
         cantidad: '10',
         unidad: UnidadMedida.kilogramo,
         precio: '50000',
+        tipo: TipoCompra.emergencia,
       );
       expect(sinProveedor.validar().esValida, isTrue);
       expect(sinProveedor.aEnvio()['proveedor'], isNull);
@@ -52,6 +54,7 @@ void main() {
           cantidad: cantidad,
           unidad: UnidadMedida.kilogramo,
           precio: precio,
+          tipo: TipoCompra.planeada,
         ).validar();
         expect(
           v.aviso,

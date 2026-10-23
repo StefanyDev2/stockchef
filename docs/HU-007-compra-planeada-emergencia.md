@@ -22,7 +22,7 @@ Yo como auxiliar de cocina quiero diferenciar las compras planeadas de las compr
 |---|---|---|
 | 1 | Botones Planeada / Emergencia (solo administrador) | El **auxiliar de cocina** también registra compras, desde "Registrar compra" |
 | 2 | Botones "Planeada" y "Emergencia" | Se mantiene **"Emergencia"** en el botón (decisión del equipo) |
-| 3 | "Planeada" viene marcada | Se mantiene así, y el **servidor rechaza** una compra sin tipo |
+| 3 | "Planeada" venía marcada | **Ninguno viene marcado.** Si se guarda sin elegir, sale "Campo obligatorio" bajo los botones y el aviso de campos pendientes; el **servidor** también rechaza una compra sin tipo |
 | 4 | Se guarda `tipo` con la compra | — |
 | 5 | Etiqueta en el historial | El auxiliar también consulta el historial |
 | 6 | Solo la etiqueta | Filtro **Todas / Planeadas / Emergencia** y resumen con cantidad de compras y total en pesos de cada tipo (administrador) |
@@ -32,4 +32,4 @@ Yo como auxiliar de cocina quiero diferenciar las compras planeadas de las compr
 - **Cambio sobre HU-006:** el administrador **y** el auxiliar de cocina registran compras (la HU-006 en el tablero del equipo dice "auxiliar de cocina"). El administrador tiene más control: el filtro y el resumen para el análisis (CA6), los insumos críticos (HU-004) y los usuarios (HU-003).
 - El auxiliar ve el historial completo del restaurante, solo para consultar.
 - Un usuario sin rol o desactivado no puede registrar compras.
-- El tipo de compra no es una lista desplegable: se mantienen los dos botones del prototipo, con "Planeada" marcada por defecto.
+- El tipo de compra no es una lista desplegable: se mantienen los dos botones del prototipo, sin ninguno marcado al entrar (lo pidió el equipo para que sea una elección obligatoria en los dos roles).

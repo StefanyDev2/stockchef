@@ -206,7 +206,7 @@ class ComprasFalsas implements ComprasRepositorio {
     final compra = Compra(
       id: 'c${guardadas.length + 1}',
       insumoNombre: insumo.nombre,
-      tipo: datos.tipo,
+      tipo: datos.tipo!,
       cantidad: cantidad,
       unidad: datos.unidad!,
       proveedor: envio['proveedor'] as String?,

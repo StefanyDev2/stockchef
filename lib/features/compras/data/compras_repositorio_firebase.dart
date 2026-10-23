@@ -64,7 +64,7 @@ class ComprasRepositorioFirebase implements ComprasRepositorio {
       return CompraGuardada(
         Compra.desdeMapa(cuerpo['compraId'] as String? ?? '', {
           ...cuerpo,
-          'tipo': datos.tipo.name,
+          'tipo': datos.tipo!.name,
           'proveedor': datos.aEnvio()['proveedor'],
           'fecha': DateTime.now(),
         }),
