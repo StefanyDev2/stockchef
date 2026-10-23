@@ -30,6 +30,15 @@ service cloud.firestore {
         && miPerfil().restaurantId == restaurantId;
     }
 
+    // Administrador o auxiliar de cocina activo del restaurante (HU-006 y
+    // HU-007: los dos registran compras). Un usuario sin rol no entra.
+    function tengoRolEn(restaurantId) {
+      return existeMiPerfil()
+        && miPerfil().activo == true
+        && miPerfil().rol in ['administrador', 'auxiliar_cocina']
+        && miPerfil().restaurantId == restaurantId;
+    }
+
     match /users/{uid} {
       // Cada usuario lee su propio perfil; el administrador lee los de su
       // restaurante (se usa en HU-003).
@@ -44,16 +53,17 @@ service cloud.firestore {
         && miPerfil().restaurantId == restaurantId;
       allow write: if false;
 
-      // HU-006: el administrador ve los insumos activos para elegir uno al
-      // registrar una compra, y el historial de compras. Solo la Cloud
-      // Function registrarCompra escribe compras y cantidades.
+      // HU-006 y HU-007: el administrador y el auxiliar de cocina ven los
+      // insumos (para elegir uno al registrar una compra) y el historial de
+      // compras. Solo las Cloud Functions escriben compras, cantidades y la
+      // clasificación de críticos (HU-004).
       match /insumos/{insumoId} {
-        allow read: if autenticado() && soyAdministradorDe(restaurantId);
+        allow read: if autenticado() && tengoRolEn(restaurantId);
         allow write: if false;
       }
 
       match /compras/{compraId} {
-        allow read: if autenticado() && soyAdministradorDe(restaurantId);
+        allow read: if autenticado() && tengoRolEn(restaurantId);
         allow write: if false;
       }
     }

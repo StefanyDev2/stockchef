@@ -53,11 +53,20 @@ const USUARIOS: Prueba[] = [
   { nombres: "Pedro", apellidos: "Díaz", correo: "pedro@correo.com", rol: "auxiliar_cocina", activo: false },
 ];
 
-/** Insumos de prueba de "Sabor Casero" (HU-006). */
-const INSUMOS = [
-  { id: "tomate", nombre: "Tomate", unidad: "kilogramo", cantidadDisponible: 5, nivelMinimo: 10, estado: "bajo", activo: true },
+/** Insumos de prueba de "Sabor Casero" (HU-006). Tomate y Pollo son críticos (HU-004). */
+const INSUMOS: {
+  id: string;
+  nombre: string;
+  unidad: string;
+  cantidadDisponible: number;
+  nivelMinimo: number;
+  estado: string;
+  activo: boolean;
+  critico?: boolean;
+}[] = [
+  { id: "tomate", nombre: "Tomate", unidad: "kilogramo", cantidadDisponible: 5, nivelMinimo: 10, estado: "bajo", activo: true, critico: true },
   { id: "arroz", nombre: "Arroz", unidad: "kilogramo", cantidadDisponible: 25, nivelMinimo: 10, estado: "disponible", activo: true },
-  { id: "pollo", nombre: "Pollo", unidad: "kilogramo", cantidadDisponible: 0, nivelMinimo: 5, estado: "agotado", activo: true },
+  { id: "pollo", nombre: "Pollo", unidad: "kilogramo", cantidadDisponible: 0, nivelMinimo: 5, estado: "agotado", activo: true, critico: true },
   { id: "aceite", nombre: "Aceite", unidad: "litro", cantidadDisponible: 3, nivelMinimo: 2, estado: "disponible", activo: true },
   { id: "huevos", nombre: "Huevos", unidad: "unidad", cantidadDisponible: 30, nivelMinimo: 60, estado: "bajo", activo: true },
   { id: "cebolla", nombre: "Cebolla", unidad: "kilogramo", cantidadDisponible: 0, nivelMinimo: 3, estado: "agotado", activo: false },
@@ -100,12 +109,17 @@ async function main(): Promise<void> {
   // HU-006: insumos de prueba mientras no exista la historia de insumos.
   for (const insumo of INSUMOS) {
     const ref = db.doc(`restaurants/${restaurantId}/insumos/${insumo.id}`);
-    if ((await ref.get()).exists) {
+    const existente = await ref.get();
+    if (existente.exists) {
+      // HU-004: a los insumos creados antes se les agrega la clasificación.
+      if (existente.data()?.critico === undefined) {
+        await ref.update({ critico: insumo.critico === true });
+      }
       console.log(`· insumo ${insumo.nombre.padEnd(12)} ya existía`);
       continue;
     }
     const { id: _, ...datos } = insumo;
-    await ref.set(datos);
+    await ref.set({ critico: false, ...datos });
     console.log(
       `✔ insumo ${insumo.nombre.padEnd(12)} ${insumo.cantidadDisponible} ${insumo.unidad} (${insumo.activo ? insumo.estado : "inactivo"})`,
     );
