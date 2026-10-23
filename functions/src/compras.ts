@@ -2,7 +2,6 @@ import { FieldValue, type Firestore } from "firebase-admin/firestore";
 import { HttpsError } from "firebase-functions/v2/https";
 
 import { convertir, esUnidad, redondear, type Unidad } from "./unidades";
-import { MENSAJES_USUARIOS } from "./usuarios";
 
 /**
  * Mensajes de HU-006. Son los mismos de la app
@@ -12,11 +11,12 @@ export const MENSAJES_COMPRAS = {
   camposPendientes: "Debe completar todos los campos para guardar la compra",
   valoresInvalidos: "Ingrese valores válidos para la cantidad y el precio",
   insumoNoDisponible: "El insumo elegido no está disponible.",
+  sinPermiso: "Solo el administrador y el auxiliar de cocina registran compras.",
   unidadIncompatible: (unidadInsumo: string) =>
     `Esa unidad no sirve para este insumo, que se mide en ${unidadInsumo}.`,
 } as const;
 
-export type CampoCompra = "insumo" | "cantidad" | "unidad" | "precio";
+export type CampoCompra = "insumo" | "cantidad" | "unidad" | "precio" | "tipo";
 type TipoCompra = "planeada" | "emergencia";
 
 export interface CompraRegistrada {
@@ -59,12 +59,15 @@ export function validarCompra(entrada: unknown): DatosCompra {
   const cantidad = campo(entrada, "cantidad");
   const unidad = campo(entrada, "unidad");
   const precioTotal = campo(entrada, "precioTotal");
+  const tipo = campo(entrada, "tipo");
 
   const pendientes: CampoCompra[] = [];
   if (vacio(insumoId)) pendientes.push("insumo");
   if (vacio(cantidad)) pendientes.push("cantidad");
   if (vacio(unidad)) pendientes.push("unidad");
   if (vacio(precioTotal)) pendientes.push("precio");
+  // HU-007, CA3: el tipo de compra es obligatorio.
+  if (tipo !== "planeada" && tipo !== "emergencia") pendientes.push("tipo");
   if (pendientes.length > 0) {
     throw new HttpsError("invalid-argument", MENSAJES_COMPRAS.camposPendientes, {
       pendientes,
@@ -81,7 +84,6 @@ export function validarCompra(entrada: unknown): DatosCompra {
   }
 
   const proveedor = campo(entrada, "proveedor");
-  const tipo = campo(entrada, "tipo");
   return {
     insumoId,
     cantidad: cantidad as number,
@@ -91,7 +93,7 @@ export function validarCompra(entrada: unknown): DatosCompra {
       typeof proveedor === "string" && proveedor.trim() !== ""
         ? proveedor.trim().replace(/\s+/g, " ")
         : null,
-    tipo: tipo === "emergencia" ? "emergencia" : "planeada",
+    tipo: tipo as TipoCompra,
   };
 }
 
@@ -112,12 +114,15 @@ export async function registrarCompra(
   const datos = validarCompra(entrada);
 
   return db.runTransaction(async (tx) => {
-    // CA12: solo un administrador activo registra compras.
-    const admin = (await tx.get(db.doc(`users/${quienLlama}`))).data();
-    if (admin?.rol !== "administrador" || admin?.activo !== true) {
-      throw new HttpsError("permission-denied", MENSAJES_USUARIOS.sinPermiso);
+    // HU-006 y HU-007: registran compras el administrador y el auxiliar de
+    // cocina, si están activos. Un usuario sin rol o desactivado no.
+    const usuario = (await tx.get(db.doc(`users/${quienLlama}`))).data();
+    const rolPermitido =
+      usuario?.rol === "administrador" || usuario?.rol === "auxiliar_cocina";
+    if (!rolPermitido || usuario?.activo !== true) {
+      throw new HttpsError("permission-denied", MENSAJES_COMPRAS.sinPermiso);
     }
-    const restaurante = db.doc(`restaurants/${admin.restaurantId}`);
+    const restaurante = db.doc(`restaurants/${usuario.restaurantId}`);
     const refInsumo = restaurante.collection("insumos").doc(datos.insumoId);
     const insumo = (await tx.get(refInsumo)).data();
     if (!insumo || insumo.activo !== true) {
@@ -155,7 +160,7 @@ export async function registrarCompra(
       precioUnitario,
       cantidadDisponibleDespues: cantidadDisponible,
       registradoPor: quienLlama,
-      registradoPorNombre: `${admin.nombres} ${admin.apellidos}`.trim(),
+      registradoPorNombre: `${usuario.nombres} ${usuario.apellidos}`.trim(),
       fecha: FieldValue.serverTimestamp(),
     });
     tx.update(refInsumo, { cantidadDisponible, estado });

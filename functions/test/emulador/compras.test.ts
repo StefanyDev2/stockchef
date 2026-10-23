@@ -17,6 +17,7 @@ let db: Firestore;
 
 let camila: string; // administradora
 let daniela: string; // auxiliar
+let andres: string; // sin rol
 let restaurantId: string;
 
 async function registrar(nombres: string): Promise<{ uid: string; restaurantId: string }> {
@@ -55,6 +56,7 @@ const TOMATE = {
   unidad: "kilogramo",
   proveedor: "Distrialimentos",
   precioTotal: 50000,
+  tipo: "planeada",
 };
 
 async function esperarError(
@@ -92,6 +94,7 @@ describe("registrarCompra contra el emulador", () => {
     restaurantId = admin.restaurantId;
     daniela = (await registrar("Daniela")).uid;
     await asignarRol({ uid: daniela, rol: "auxiliar_cocina" }, camila, db);
+    andres = (await registrar("Andres")).uid;
     await crearInsumo("tomate", {});
   });
 
@@ -199,7 +202,7 @@ describe("registrarCompra contra el emulador", () => {
         MENSAJES_COMPRAS.camposPendientes,
       );
       assert.deepEqual(error.details, {
-        pendientes: ["insumo", "cantidad", "unidad", "precio"],
+        pendientes: ["insumo", "cantidad", "unidad", "precio", "tipo"],
       });
     });
 
@@ -239,11 +242,42 @@ describe("registrarCompra contra el emulador", () => {
     });
   });
 
-  describe("CA12: solo el administrador activo", () => {
-    it("un auxiliar no puede registrar compras", async () => {
-      await esperarError(registrarCompra(TOMATE, daniela, db), "permission-denied");
+  describe("HU-007, CA3: el tipo de compra es obligatorio", () => {
+    it("sin tipo o con un tipo desconocido no se guarda", async () => {
+      for (const tipo of [undefined, "", "urgente"]) {
+        const error = await esperarError(
+          registrarCompra({ ...TOMATE, tipo }, camila, db),
+          "invalid-argument",
+          MENSAJES_COMPRAS.camposPendientes,
+        );
+        assert.deepEqual(error.details, { pendientes: ["tipo"] });
+      }
+      assert.equal((await compras()).length, 0);
+    });
+  });
+
+  describe("quién registra compras (HU-006 y HU-007)", () => {
+    it("HU-007, CA1: el auxiliar de cocina registra compras", async () => {
+      const r = await registrarCompra({ ...TOMATE, tipo: "emergencia" }, daniela, db);
+      assert.equal(r.cantidadDisponible, 15);
+      const datos = (await compras())[0].data();
+      assert.equal(datos.registradoPor, daniela);
+      assert.equal(datos.tipo, "emergencia");
+    });
+
+    it("un usuario sin rol no puede registrar compras", async () => {
+      await esperarError(
+        registrarCompra(TOMATE, andres, db),
+        "permission-denied",
+        MENSAJES_COMPRAS.sinPermiso,
+      );
       assert.equal((await compras()).length, 0);
       assert.equal((await insumo("tomate").get()).data()!.cantidadDisponible, 5);
+    });
+
+    it("un auxiliar desactivado tampoco", async () => {
+      await cambiarEstadoUsuario({ uid: daniela, activo: false }, camila, db, auth);
+      await esperarError(registrarCompra(TOMATE, daniela, db), "permission-denied");
     });
 
     it("un administrador desactivado tampoco", async () => {
