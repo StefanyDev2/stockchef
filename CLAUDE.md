@@ -6,10 +6,10 @@ El problema que resuelve: los dueños compran por costumbre, cocinan sin recetas
 
 ## Alcance de esta etapa (Sprint 1)
 
-Se construyen **HU-001 (Registro de usuario)**, **HU-002 (Inicio de sesión)**, **HU-003 (Asignación de roles)** y **HU-006 (Registrar compra de insumos)**.
-No construir el resto de historias (gestión de insumos, pérdidas, menú, reportes), salvo lo mínimo para que estas historias funcionen.
+Se construyen **HU-001 (Registro de usuario)**, **HU-002 (Inicio de sesión)**, **HU-003 (Asignación de roles)**, **HU-004 (Insumos críticos)**, **HU-006 (Registrar compra de insumos)** y **HU-007 (Compra planeada o de emergencia)**.
+No construir el resto de historias (crear y editar insumos, pérdidas, menú, reportes), salvo lo mínimo para que estas historias funcionen.
 
-- Especificación y criterios de aceptación: `docs/HU-001-registro-usuario.md`, `docs/HU-002-inicio-sesion.md`, `docs/HU-003-asignacion-roles.md` y `docs/HU-006-registrar-compra.md`
+- Especificación y criterios de aceptación: `docs/HU-001-registro-usuario.md`, `docs/HU-002-inicio-sesion.md`, `docs/HU-003-asignacion-roles.md`, `docs/HU-004-insumos-criticos.md`, `docs/HU-006-registrar-compra.md` y `docs/HU-007-compra-planeada-emergencia.md`
 - Prototipos visuales: `docs/prototipos/hu001_registro_usuario_prototipo.html`, `docs/prototipos/hu002_inicio_sesion_prototipo.html` (abrir en el navegador), `docs/prototipos/hu003/` y `docs/prototipos/hu006/` (capturas de Miro)
 - Modelo de datos y reglas: `docs/modelo-datos.md`
 
