@@ -56,7 +56,7 @@ class Insumo {
 /// Campos obligatorios del formulario (CA2).
 enum CampoCompra { insumo, cantidad, unidad, precio }
 
-/// Lo que el administrador escribió en el formulario de compra.
+/// Lo que se escribió en el formulario de compra.
 class DatosCompra {
   const DatosCompra({
     this.insumoId,
@@ -223,7 +223,30 @@ final class CompraRechazada extends ResultadoCompra {
   final Set<CampoCompra> pendientes;
 }
 
-/// CA12: quien intentó guardar ya no es administrador activo.
+/// Quien intentó guardar ya no tiene un rol que pueda registrar compras.
 final class CompraSinPermiso extends ResultadoCompra {
   const CompraSinPermiso();
 }
+
+/// HU-007, CA6: compras de un tipo, o todas si `tipo` es `null`.
+List<Compra> filtrarCompras(List<Compra> compras, TipoCompra? tipo) =>
+    tipo == null ? compras : [...compras.where((c) => c.tipo == tipo)];
+
+/// Cuántas compras y cuánto dinero hay de un tipo.
+class ResumenTipo {
+  const ResumenTipo({required this.cantidad, required this.total});
+
+  final int cantidad;
+  final num total;
+}
+
+/// HU-007, CA6: resumen de planeadas y de emergencia.
+Map<TipoCompra, ResumenTipo> resumirPorTipo(List<Compra> compras) => {
+  for (final tipo in TipoCompra.values)
+    tipo: ResumenTipo(
+      cantidad: compras.where((c) => c.tipo == tipo).length,
+      total: compras
+          .where((c) => c.tipo == tipo)
+          .fold<num>(0, (suma, c) => suma + c.precioTotal),
+    ),
+};

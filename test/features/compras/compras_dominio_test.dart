@@ -154,4 +154,51 @@ void main() {
       );
     });
   });
+
+  group('HU-007, CA6: filtrar y resumir por tipo', () {
+    Compra compra(String id, TipoCompra tipo, num precio) => Compra(
+      id: id,
+      insumoNombre: 'Tomate',
+      tipo: tipo,
+      cantidad: 1,
+      unidad: UnidadMedida.kilogramo,
+      proveedor: null,
+      precioTotal: precio,
+      precioUnitario: precio,
+      cantidadDisponibleDespues: 1,
+      unidadInsumo: UnidadMedida.kilogramo,
+    );
+    final compras = [
+      compra('a', TipoCompra.planeada, 50000),
+      compra('b', TipoCompra.emergencia, 20000),
+      compra('c', TipoCompra.emergencia, 15000),
+    ];
+
+    test('el filtro deja solo las del tipo, o todas', () {
+      expect(filtrarCompras(compras, null).map((c) => c.id), ['a', 'b', 'c']);
+      expect(filtrarCompras(compras, TipoCompra.emergencia).map((c) => c.id), [
+        'b',
+        'c',
+      ]);
+      expect(filtrarCompras(compras, TipoCompra.planeada).map((c) => c.id), [
+        'a',
+      ]);
+    });
+
+    test('el resumen cuenta compras y suma precios de cada tipo', () {
+      final r = resumirPorTipo(compras);
+      expect(r[TipoCompra.planeada]!.cantidad, 1);
+      expect(r[TipoCompra.planeada]!.total, 50000);
+      expect(r[TipoCompra.emergencia]!.cantidad, 2);
+      expect(r[TipoCompra.emergencia]!.total, 35000);
+      expect(resumirPorTipo([])[TipoCompra.emergencia]!.cantidad, 0);
+    });
+
+    test('HU-007, CA2: los dos tipos y sus nombres', () {
+      expect(TipoCompra.values.map((t) => t.etiqueta), [
+        'Planeada',
+        'Emergencia',
+      ]);
+    });
+  });
 }

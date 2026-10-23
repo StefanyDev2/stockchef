@@ -12,6 +12,7 @@ import '../../features/compras/domain/compras.dart';
 import '../../features/compras/presentation/compra_pantalla.dart';
 import '../../features/compras/presentation/historial_compras_pantalla.dart';
 import '../../features/inicio/presentation/inicio_pantalla.dart';
+import '../../features/insumos/presentation/insumos_criticos_pantalla.dart';
 import '../../features/inicio/presentation/mi_cuenta_pantalla.dart';
 import '../../features/usuarios/presentation/detalle_usuario_pantalla.dart';
 import '../../features/usuarios/presentation/sin_permiso_pantalla.dart';
@@ -30,6 +31,7 @@ abstract final class Rutas {
   static const sinPermiso = '/inicio/sin-permiso';
   static const compras = '/inicio/compras';
   static const historialCompras = '$compras/historial';
+  static const insumos = '/inicio/insumos';
 
   /// Se ven sin haber iniciado sesión.
   static const publicas = {inicioSesion, registro, cuentaCreada};
@@ -66,6 +68,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         (perfil) => perfil.rol == Rol.administrador
             ? pantalla(perfil)
             : const SinPermisoPantalla(),
+      );
+
+  /// HU-006 y HU-007: compras para el administrador y el auxiliar de
+  /// cocina. Un usuario sin rol ve "No tienes permisos".
+  Widget conRolDeTrabajo(Widget Function(PerfilUsuario perfil) pantalla) =>
+      conPerfil(
+        (perfil) => perfil.rol == Rol.sinRol
+            ? const SinPermisoPantalla()
+            : pantalla(perfil),
       );
 
   final router = GoRouter(
@@ -106,20 +117,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: 'compras',
-            builder: (context, state) => soloAdministrador(
-              (perfil) => CompraPantalla(administrador: perfil),
-            ),
+            builder: (context, state) =>
+                conRolDeTrabajo((perfil) => CompraPantalla(usuario: perfil)),
             routes: [
               GoRoute(
                 path: 'historial',
-                builder: (context, state) => soloAdministrador(
+                builder: (context, state) => conRolDeTrabajo(
                   (perfil) => HistorialComprasPantalla(
-                    administrador: perfil,
+                    usuario: perfil,
                     recienGuardada: state.extra as Compra?,
                   ),
                 ),
               ),
             ],
+          ),
+          GoRoute(
+            path: 'insumos',
+            builder: (context, state) => soloAdministrador(
+              (perfil) => InsumosCriticosPantalla(administrador: perfil),
+            ),
           ),
           GoRoute(
             path: 'usuarios',

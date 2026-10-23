@@ -13,11 +13,12 @@ import '../domain/compras.dart';
 import '../domain/unidades.dart';
 import 'compras_providers.dart';
 
-/// Formulario "Compra de insumos" (HU-006). Solo lo abre el administrador.
+/// Formulario "Compra de insumos" (HU-006 y HU-007). Lo usan el
+/// administrador y el auxiliar de cocina.
 class CompraPantalla extends ConsumerStatefulWidget {
-  const CompraPantalla({super.key, required this.administrador});
+  const CompraPantalla({super.key, required this.usuario});
 
-  final PerfilUsuario administrador;
+  final PerfilUsuario usuario;
 
   @override
   ConsumerState<CompraPantalla> createState() => _CompraPantallaState();
@@ -107,7 +108,7 @@ class _CompraPantallaState extends ConsumerState<CompraPantalla> {
   @override
   Widget build(BuildContext context) {
     final insumos = ref.watch(
-      insumosActivosProvider(widget.administrador.restaurantId),
+      insumosActivosProvider(widget.usuario.restaurantId),
     );
 
     return Scaffold(

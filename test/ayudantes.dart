@@ -10,6 +10,8 @@ import 'package:stockchef/features/auth/presentation/sesion_controlador.dart';
 import 'package:stockchef/features/compras/domain/compras.dart';
 import 'package:stockchef/features/compras/domain/unidades.dart';
 import 'package:stockchef/features/compras/presentation/compras_providers.dart';
+import 'package:stockchef/features/insumos/domain/insumos.dart';
+import 'package:stockchef/features/insumos/presentation/insumos_providers.dart';
 import 'package:stockchef/features/usuarios/domain/usuarios.dart';
 import 'package:stockchef/features/usuarios/presentation/usuarios_providers.dart';
 
@@ -74,6 +76,7 @@ Future<void> abrirApp(
   SesionFalsa? sesion,
   UsuariosFalsos? usuarios,
   ComprasFalsas? compras,
+  InsumosFalsos? insumos,
   Size tamano = const Size(1080, 2400),
 }) async {
   tester.view.physicalSize = tamano;
@@ -88,6 +91,9 @@ Future<void> abrirApp(
         ),
         comprasRepositorioProvider.overrideWithValue(
           compras ?? ComprasFalsas(),
+        ),
+        insumosRepositorioProvider.overrideWithValue(
+          insumos ?? InsumosFalsos(),
         ),
       ],
       child: const StockChefApp(),
@@ -212,5 +218,73 @@ class ComprasFalsas implements ComprasRepositorio {
     guardadas.add(compra);
     _cambios.add(guardadas.reversed.toList());
     return CompraGuardada(compra);
+  }
+}
+
+/// Insumos registrados en memoria (HU-004). Guarda la lista de críticos como
+/// lo haría el servidor, salvo que `respuesta` diga otra cosa.
+class InsumosFalsos implements InsumosRepositorio {
+  InsumosFalsos([List<InsumoRegistrado>? iniciales])
+    : _insumos =
+          iniciales ??
+          const [
+            InsumoRegistrado(
+              id: 'tomate',
+              nombre: 'Tomate',
+              activo: true,
+              critico: true,
+            ),
+            InsumoRegistrado(
+              id: 'arroz',
+              nombre: 'Arroz',
+              activo: true,
+              critico: false,
+            ),
+            InsumoRegistrado(
+              id: 'pollo',
+              nombre: 'Pollo',
+              activo: true,
+              critico: false,
+            ),
+            InsumoRegistrado(
+              id: 'cebolla',
+              nombre: 'Cebolla',
+              activo: false,
+              critico: false,
+            ),
+          ];
+
+  List<InsumoRegistrado> _insumos;
+  final _cambios = StreamController<List<InsumoRegistrado>>.broadcast();
+
+  ResultadoGuardado? respuesta;
+  final guardados = <Set<String>>[];
+
+  Set<String> get criticos => {
+    for (final i in _insumos)
+      if (i.critico) i.id,
+  };
+
+  @override
+  Stream<List<InsumoRegistrado>> insumosDe(String restaurantId) async* {
+    yield _insumos;
+    yield* _cambios.stream;
+  }
+
+  @override
+  Future<ResultadoGuardado> guardarCriticos(Set<String> criticos) async {
+    guardados.add(criticos);
+    if (respuesta != null) return respuesta!;
+    _insumos = [
+      for (final i in _insumos)
+        InsumoRegistrado(
+          id: i.id,
+          nombre: i.nombre,
+          activo: i.activo,
+          critico: criticos.contains(i.id),
+        ),
+    ];
+    _cambios.add(_insumos);
+    return const ListaGuardada();
   }
 }
