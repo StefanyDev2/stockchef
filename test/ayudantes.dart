@@ -260,6 +260,12 @@ class InsumosFalsos implements InsumosRepositorio {
   ResultadoGuardado? respuesta;
   final guardados = <Set<String>>[];
 
+  /// Simula que llega una versión nueva desde Firestore.
+  void llegaDelServidor(List<InsumoRegistrado> insumos) {
+    _insumos = insumos;
+    _cambios.add(insumos);
+  }
+
   Set<String> get criticos => {
     for (final i in _insumos)
       if (i.critico) i.id,

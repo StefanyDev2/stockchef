@@ -37,9 +37,11 @@ class _InsumosCriticosPantallaState
       (_guardados!.length != _elegidos.length ||
           !_guardados!.containsAll(_elegidos));
 
-  /// Toma la clasificación guardada la primera vez que llegan los insumos.
+  /// Toma la clasificación guardada cada vez que llegan los insumos, mientras
+  /// no haya cambios sin guardar. Firestore puede mandar primero una copia
+  /// local vieja y después la del servidor; así se muestra siempre la última.
   void _sincronizar(List<InsumoRegistrado> insumos) {
-    if (_guardados != null) return;
+    if (_hayCambios) return;
     _guardados = {
       for (final i in insumos)
         if (i.critico) i.id,

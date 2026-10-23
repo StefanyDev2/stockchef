@@ -123,6 +123,74 @@ void main() {
       expect(_en('otros', 'Inactivo'), findsOneWidget);
     });
 
+    testWidgets(
+      'muestra la clasificación más reciente que llega del servidor',
+      (tester) async {
+        // Primero llega una copia vieja (sin críticos) y luego la del servidor.
+        insumos = InsumosFalsos(const [
+          InsumoRegistrado(
+            id: 'tomate',
+            nombre: 'Tomate',
+            activo: true,
+            critico: false,
+          ),
+          InsumoRegistrado(
+            id: 'pollo',
+            nombre: 'Pollo',
+            activo: true,
+            critico: false,
+          ),
+        ]);
+        await abrirInsumos(tester);
+        expect(find.text('Insumos críticos (0)'), findsOneWidget);
+
+        insumos.llegaDelServidor(const [
+          InsumoRegistrado(
+            id: 'tomate',
+            nombre: 'Tomate',
+            activo: true,
+            critico: true,
+          ),
+          InsumoRegistrado(
+            id: 'pollo',
+            nombre: 'Pollo',
+            activo: true,
+            critico: true,
+          ),
+        ]);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Insumos críticos (2)'), findsOneWidget);
+        expect(tester.widget<FilledButton>(_guardar).onPressed, isNull);
+      },
+    );
+
+    testWidgets('lo que llega del servidor no borra cambios sin guardar', (
+      tester,
+    ) async {
+      await abrirInsumos(tester);
+      await tester.tap(_interruptor('arroz'));
+      await tester.pump();
+
+      insumos.llegaDelServidor(const [
+        InsumoRegistrado(
+          id: 'tomate',
+          nombre: 'Tomate',
+          activo: true,
+          critico: true,
+        ),
+        InsumoRegistrado(
+          id: 'arroz',
+          nombre: 'Arroz',
+          activo: true,
+          critico: false,
+        ),
+      ]);
+      await tester.pumpAndSettle();
+
+      expect(_en('criticos', 'Arroz'), findsOneWidget);
+    });
+
     testWidgets('sin cambios, "Guardar cambios" está deshabilitado', (
       tester,
     ) async {
