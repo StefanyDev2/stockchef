@@ -266,6 +266,104 @@ void main() {
     expect(find.text(MensajesUsuarios.sinPermisoTitulo), findsOneWidget);
   });
 
+  group('ver el historial sin registrar una compra', () {
+    Future<void> guardarUnaYVolverAlInicio(WidgetTester tester) async {
+      await llenarTomate(tester);
+      await tester.tap(_guardar);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Volver'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('desde el formulario se vuelve a ver el historial', (
+      tester,
+    ) async {
+      await abrirCompras(tester);
+      await guardarUnaYVolverAlInicio(tester);
+      expect(
+        find.text('Hola Camila,\n¿Qué quieres hacer hoy?'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Compras'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ver historial de compras'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Historial de compras'), findsOneWidget);
+      expect(find.text(r'Precio total: $50.000'), findsOneWidget);
+      // No es el aviso de una compra recién guardada.
+      expect(find.text(MensajesCompras.compraGuardada), findsNothing);
+      expect(find.text('Registrar compra'), findsOneWidget);
+    });
+
+    testWidgets('el ícono de arriba también abre el historial', (tester) async {
+      await abrirCompras(tester);
+
+      await tester.tap(find.byTooltip('Ver historial de compras'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Historial de compras'), findsOneWidget);
+      expect(find.text('Todavía no hay compras registradas.'), findsOneWidget);
+    });
+
+    testWidgets('al volver del historial, el formulario conserva lo escrito', (
+      tester,
+    ) async {
+      await abrirCompras(tester);
+      await tester.enterText(_texto('cantidad'), '12');
+
+      await tester.tap(find.text('Ver historial de compras'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Volver'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Compra de insumos'), findsOneWidget);
+      expect(
+        tester.widget<TextField>(_texto('cantidad')).controller!.text,
+        '12',
+      );
+    });
+
+    testWidgets('"Registrar compra" en el historial vuelve al formulario', (
+      tester,
+    ) async {
+      await abrirCompras(tester);
+      await tester.tap(find.text('Ver historial de compras'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Registrar compra'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Compra de insumos'), findsOneWidget);
+      await tester.tap(find.byTooltip('Volver'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Hola Camila,\n¿Qué quieres hacer hoy?'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('el auxiliar también puede ver el historial', (tester) async {
+      await abrirApp(
+        tester,
+        sesion: SesionFalsa(
+          guardada: perfilDePrueba(nombres: 'Daniela', rol: Rol.auxiliarCocina),
+        ),
+        compras: compras,
+        tamano: const Size(1080, 3000),
+      );
+      await tester.tap(find.text('Registrar compra'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Ver historial de compras'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Historial de compras'), findsOneWidget);
+      expect(find.text('Resumen de compras'), findsNothing);
+    });
+  });
+
   group('quién registra compras (HU-006 y HU-007)', () {
     final daniela = perfilDePrueba(nombres: 'Daniela', rol: Rol.auxiliarCocina);
     final andres = perfilDePrueba(nombres: 'Andrés', rol: Rol.sinRol);
