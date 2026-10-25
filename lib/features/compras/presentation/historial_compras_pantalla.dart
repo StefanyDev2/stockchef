@@ -103,10 +103,20 @@ class _HistorialComprasPantallaState
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-              child: FilledButton(
-                onPressed: () => context.pushReplacement(Rutas.compras),
-                child: const Text('Registrar otra compra'),
-              ),
+              // Después de guardar, abre un formulario nuevo. Si se llegó
+              // desde "Ver historial de compras", vuelve al formulario que
+              // ya estaba abierto.
+              child: recienGuardada != null
+                  ? FilledButton(
+                      onPressed: () => context.pushReplacement(Rutas.compras),
+                      child: const Text('Registrar otra compra'),
+                    )
+                  : FilledButton(
+                      onPressed: () => context.canPop()
+                          ? context.pop()
+                          : context.pushReplacement(Rutas.compras),
+                      child: const Text('Registrar compra'),
+                    ),
             ),
           ],
         ),

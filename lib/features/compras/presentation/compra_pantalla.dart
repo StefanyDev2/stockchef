@@ -106,6 +106,10 @@ class _CompraPantallaState extends ConsumerState<CompraPantalla> {
 
   void _volver() => context.canPop() ? context.pop() : context.go(Rutas.inicio);
 
+  /// Abre el historial encima del formulario; la flecha de volver regresa
+  /// aquí, sin perder lo que se haya escrito.
+  void _verHistorial() => context.push(Rutas.historialCompras);
+
   @override
   Widget build(BuildContext context) {
     final insumos = ref.watch(
@@ -120,6 +124,13 @@ class _CompraPantallaState extends ConsumerState<CompraPantalla> {
           onPressed: _guardando ? null : _volver,
         ),
         title: const TituloResaltado('Compra de insumos'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history_rounded),
+            tooltip: 'Ver historial de compras',
+            onPressed: _guardando ? null : _verHistorial,
+          ),
+        ],
       ),
       body: SafeArea(
         child: insumos.when(
@@ -281,6 +292,14 @@ class _CompraPantallaState extends ConsumerState<CompraPantalla> {
                   child: CircularProgressIndicator(strokeWidth: 2.5),
                 )
               : const Text('Guardar compra'),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: TextButton.icon(
+            onPressed: _guardando ? null : _verHistorial,
+            icon: const Icon(Icons.history_rounded),
+            label: const Text('Ver historial de compras'),
+          ),
         ),
       ],
     );

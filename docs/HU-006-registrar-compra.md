@@ -30,6 +30,8 @@ Yo como auxiliar de cocina quiero registrar las compras de insumos indicando pro
 1. **Compra de insumos**: tipo (Planeada / Emergencia), insumo, cantidad y unidad, proveedor, precio total y "Guardar compra".
 2. **Historial de compras**: "Compra guardada correctamente", la compra recién guardada y las anteriores, y "Registrar otra compra".
 
+Desde el formulario, el botón **"Ver historial de compras"** (o el ícono 🕘 de arriba) abre el historial en cualquier momento, sin registrar una compra; la flecha de volver regresa al formulario.
+
 ## Decisiones tomadas
 
 - **Quién:** al principio solo el administrador; desde HU-007, el administrador y el auxiliar de cocina. El servidor exige un rol activo.
