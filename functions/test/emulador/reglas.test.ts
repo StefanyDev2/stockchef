@@ -166,19 +166,21 @@ describe("reglas de Firestore", () => {
     });
   });
 
-  describe("insumos y compras (HU-006)", () => {
+  describe("insumos y compras (HU-004, HU-006, HU-007)", () => {
     const insumos = (uid?: string) =>
       getDocs(collection(como(uid), `restaurants/${SABOR}/insumos`));
     const compras = (uid?: string) =>
       getDocs(collection(como(uid), `restaurants/${SABOR}/compras`));
 
-    it("el administrador ve los insumos y el historial de compras", async () => {
-      assert.equal((await assertSucceeds(insumos("admin"))).size, 1);
-      assert.equal((await assertSucceeds(compras("admin"))).size, 1);
+    it("el administrador y el auxiliar ven los insumos y el historial (HU-007)", async () => {
+      for (const uid of ["admin", "auxiliar"]) {
+        assert.equal((await assertSucceeds(insumos(uid))).size, 1, uid);
+        assert.equal((await assertSucceeds(compras(uid))).size, 1, uid);
+      }
     });
 
-    it("CA12: auxiliar, sin rol, desactivado, otro restaurante o sin sesión no", async () => {
-      for (const uid of ["auxiliar", "sinRol", "adminInactivo", "adminOtro", undefined]) {
+    it("sin rol, desactivado, otro restaurante o sin sesión no", async () => {
+      for (const uid of ["sinRol", "adminInactivo", "adminOtro", undefined]) {
         await assertFails(insumos(uid));
         await assertFails(compras(uid));
       }
@@ -188,6 +190,9 @@ describe("reglas de Firestore", () => {
       const db = como("admin");
       await assertFails(setDoc(doc(db, `restaurants/${SABOR}/compras/c2`), { insumoId: "tomate" }));
       await assertFails(updateDoc(doc(db, `restaurants/${SABOR}/insumos/tomate`), { cantidadDisponible: 999 }));
+      // HU-004: la clasificación de críticos tampoco se cambia desde la app.
+      await assertFails(updateDoc(doc(db, `restaurants/${SABOR}/insumos/tomate`), { critico: true }));
+      await assertFails(updateDoc(doc(como("auxiliar"), `restaurants/${SABOR}/insumos/tomate`), { critico: true }));
     });
   });
 

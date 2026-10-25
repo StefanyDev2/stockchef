@@ -11,6 +11,7 @@ void main() {
     unidad: UnidadMedida.kilogramo,
     proveedor: '  Distrialimentos ',
     precio: r'$50.000',
+    tipo: TipoCompra.planeada,
   );
 
   group('validar (CA2, CA5, CA6)', () {
@@ -26,6 +27,7 @@ void main() {
         cantidad: '10',
         unidad: UnidadMedida.kilogramo,
         precio: '50000',
+        tipo: TipoCompra.emergencia,
       );
       expect(sinProveedor.validar().esValida, isTrue);
       expect(sinProveedor.aEnvio()['proveedor'], isNull);
@@ -52,6 +54,7 @@ void main() {
           cantidad: cantidad,
           unidad: UnidadMedida.kilogramo,
           precio: precio,
+          tipo: TipoCompra.planeada,
         ).validar();
         expect(
           v.aviso,
@@ -152,6 +155,53 @@ void main() {
         (traducirErrorCompra('internal', 'x', null) as CompraRechazada).mensaje,
         MensajesCompras.errorInterno,
       );
+    });
+  });
+
+  group('HU-007, CA6: filtrar y resumir por tipo', () {
+    Compra compra(String id, TipoCompra tipo, num precio) => Compra(
+      id: id,
+      insumoNombre: 'Tomate',
+      tipo: tipo,
+      cantidad: 1,
+      unidad: UnidadMedida.kilogramo,
+      proveedor: null,
+      precioTotal: precio,
+      precioUnitario: precio,
+      cantidadDisponibleDespues: 1,
+      unidadInsumo: UnidadMedida.kilogramo,
+    );
+    final compras = [
+      compra('a', TipoCompra.planeada, 50000),
+      compra('b', TipoCompra.emergencia, 20000),
+      compra('c', TipoCompra.emergencia, 15000),
+    ];
+
+    test('el filtro deja solo las del tipo, o todas', () {
+      expect(filtrarCompras(compras, null).map((c) => c.id), ['a', 'b', 'c']);
+      expect(filtrarCompras(compras, TipoCompra.emergencia).map((c) => c.id), [
+        'b',
+        'c',
+      ]);
+      expect(filtrarCompras(compras, TipoCompra.planeada).map((c) => c.id), [
+        'a',
+      ]);
+    });
+
+    test('el resumen cuenta compras y suma precios de cada tipo', () {
+      final r = resumirPorTipo(compras);
+      expect(r[TipoCompra.planeada]!.cantidad, 1);
+      expect(r[TipoCompra.planeada]!.total, 50000);
+      expect(r[TipoCompra.emergencia]!.cantidad, 2);
+      expect(r[TipoCompra.emergencia]!.total, 35000);
+      expect(resumirPorTipo([])[TipoCompra.emergencia]!.cantidad, 0);
+    });
+
+    test('HU-007, CA2: los dos tipos y sus nombres', () {
+      expect(TipoCompra.values.map((t) => t.etiqueta), [
+        'Planeada',
+        'Emergencia',
+      ]);
     });
   });
 }

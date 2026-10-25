@@ -13,11 +13,12 @@ import '../domain/compras.dart';
 import '../domain/unidades.dart';
 import 'compras_providers.dart';
 
-/// Formulario "Compra de insumos" (HU-006). Solo lo abre el administrador.
+/// Formulario "Compra de insumos" (HU-006 y HU-007). Lo usan el
+/// administrador y el auxiliar de cocina.
 class CompraPantalla extends ConsumerStatefulWidget {
-  const CompraPantalla({super.key, required this.administrador});
+  const CompraPantalla({super.key, required this.usuario});
 
-  final PerfilUsuario administrador;
+  final PerfilUsuario usuario;
 
   @override
   ConsumerState<CompraPantalla> createState() => _CompraPantallaState();
@@ -28,7 +29,8 @@ class _CompraPantallaState extends ConsumerState<CompraPantalla> {
   final _proveedor = TextEditingController();
   final _precio = TextEditingController();
 
-  TipoCompra _tipo = TipoCompra.planeada;
+  /// HU-007, CA3: ninguno viene marcado; hay que elegirlo.
+  TipoCompra? _tipo;
   String? _insumoId;
   UnidadMedida? _unidad;
 
@@ -107,7 +109,7 @@ class _CompraPantallaState extends ConsumerState<CompraPantalla> {
   @override
   Widget build(BuildContext context) {
     final insumos = ref.watch(
-      insumosActivosProvider(widget.administrador.restaurantId),
+      insumosActivosProvider(widget.usuario.restaurantId),
     );
 
     return Scaffold(
@@ -151,22 +153,40 @@ class _CompraPantallaState extends ConsumerState<CompraPantalla> {
           AvisoError(_aviso!),
           const SizedBox(height: 16),
         ],
+        const Text(
+          'Tipo de compra',
+          style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.tinta),
+        ),
+        const SizedBox(height: 6),
         Row(
+          key: const Key('campo-tipo'),
           children: [
             for (final tipo in TipoCompra.values) ...[
               Expanded(
                 child: _BotonTipo(
                   tipo: tipo,
                   elegido: _tipo == tipo,
+                  conError: _errores.containsKey(CampoCompra.tipo),
                   alElegir: _guardando
                       ? null
-                      : () => setState(() => _tipo = tipo),
+                      : () {
+                          setState(() => _tipo = tipo);
+                          _corregido(CampoCompra.tipo);
+                        },
                 ),
               ),
               if (tipo != TipoCompra.values.last) const SizedBox(width: 12),
             ],
           ],
         ),
+        if (_errores[CampoCompra.tipo] case final error?)
+          Padding(
+            padding: const EdgeInsets.only(top: 6, left: 12),
+            child: Text(
+              error,
+              style: const TextStyle(color: AppColors.error, fontSize: 12),
+            ),
+          ),
         const SizedBox(height: 20),
         _Lista<String>(
           clave: const Key('campo-insumo'),
@@ -326,16 +346,20 @@ class _Lista<T> extends StatelessWidget {
   }
 }
 
-/// "Planeada" / "Emergencia" del prototipo: durazno el elegido.
+/// "Planeada" / "Emergencia" del prototipo: naranja el elegido.
 class _BotonTipo extends StatelessWidget {
   const _BotonTipo({
     required this.tipo,
     required this.elegido,
+    required this.conError,
     required this.alElegir,
   });
 
   final TipoCompra tipo;
   final bool elegido;
+
+  /// Borde rojo cuando se intentó guardar sin elegir el tipo.
+  final bool conError;
   final VoidCallback? alElegir;
 
   @override
@@ -348,7 +372,11 @@ class _BotonTipo extends StatelessWidget {
           backgroundColor: elegido ? AppColors.naranja : AppColors.fondo,
           foregroundColor: AppColors.tinta,
           side: BorderSide(
-            color: elegido ? AppColors.naranja : AppColors.borde,
+            color: elegido
+                ? AppColors.naranja
+                : conError
+                ? AppColors.error
+                : AppColors.borde,
           ),
           minimumSize: const Size.fromHeight(44),
           shape: RoundedRectangleBorder(

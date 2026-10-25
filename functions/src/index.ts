@@ -9,6 +9,7 @@ import {
   registrarIntentoFallido as intentoFallido,
 } from "./bloqueo";
 import { registrarCompra as compra } from "./compras";
+import { guardarInsumosCriticos as guardarCriticos } from "./insumos";
 import { registrarUsuario as registrar } from "./registro";
 import {
   asignarRol as asignar,
@@ -46,7 +47,12 @@ export const cambiarEstadoUsuario = onCall((request) =>
   cambiarEstado(request.data, request.auth?.uid, getFirestore(), getAuth()),
 );
 
-/** HU-006: el administrador registra una compra de insumos. */
+/** HU-006 y HU-007: el administrador o el auxiliar registran una compra. */
 export const registrarCompra = onCall((request) =>
   compra(request.data, request.auth?.uid, getFirestore()),
+);
+
+/** HU-004: el administrador guarda la lista de insumos críticos. */
+export const guardarInsumosCriticos = onCall((request) =>
+  guardarCriticos(request.data, request.auth?.uid, getFirestore()),
 );

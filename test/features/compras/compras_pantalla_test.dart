@@ -39,7 +39,13 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> llenarTomate(WidgetTester tester) async {
+  /// Llena la compra de tomate. El tipo es obligatorio (HU-007, CA3).
+  Future<void> llenarTomate(
+    WidgetTester tester, {
+    String tipo = 'Planeada',
+  }) async {
+    await tester.tap(find.text(tipo));
+    await tester.pump();
     await elegir(tester, 'insumo', 'Tomate');
     await tester.enterText(_texto('cantidad'), '10');
     await tester.enterText(_texto('proveedor'), 'Distrialimentos');
@@ -109,8 +115,44 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(MensajesCompras.camposPendientes), findsOneWidget);
-    expect(find.text(MensajesCompras.campoObligatorio), findsNWidgets(4));
+    // Insumo, cantidad, unidad, precio y tipo de compra (HU-007, CA3).
+    expect(find.text(MensajesCompras.campoObligatorio), findsNWidgets(5));
     expect(compras.enviados, isEmpty);
+  });
+
+  testWidgets('HU-007, CA3: ningún tipo viene marcado y es obligatorio', (
+    tester,
+  ) async {
+    await abrirCompras(tester);
+    // Todo lleno menos el tipo: si alguno viniera marcado, se guardaría.
+    await elegir(tester, 'insumo', 'Tomate');
+    await tester.enterText(_texto('cantidad'), '10');
+    await tester.enterText(_texto('precio'), '50000');
+    await tester.tap(_guardar);
+    await tester.pumpAndSettle();
+
+    expect(find.text(MensajesCompras.camposPendientes), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.ancestor(
+          of: find.byKey(const Key('campo-tipo')),
+          matching: find.byType(ListView),
+        ),
+        matching: find.text(MensajesCompras.campoObligatorio),
+      ),
+      findsOneWidget,
+    );
+    expect(compras.enviados, isEmpty);
+
+    // Al elegir el tipo, la alerta se va y ya se puede guardar.
+    await tester.tap(find.text('Emergencia'));
+    await tester.pump();
+    expect(find.text(MensajesCompras.campoObligatorio), findsNothing);
+    expect(find.text(MensajesCompras.camposPendientes), findsNothing);
+
+    await tester.tap(_guardar);
+    await tester.pumpAndSettle();
+    expect(compras.enviados.single['tipo'], 'emergencia');
   });
 
   testWidgets('CA6: cantidad o precio en cero no se envían', (tester) async {
@@ -155,15 +197,20 @@ void main() {
 
   testWidgets('una compra de emergencia queda marcada así', (tester) async {
     await abrirCompras(tester);
-    await tester.tap(find.text('Emergencia'));
-    await tester.pump();
-    await llenarTomate(tester);
+    await llenarTomate(tester, tipo: 'Emergencia');
 
     await tester.tap(_guardar);
     await tester.pumpAndSettle();
 
     expect(compras.enviados.single['tipo'], 'emergencia');
-    expect(find.text('Emergencia'), findsOneWidget);
+    // La etiqueta de la tarjeta, además del resumen y el filtro.
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('resumen-emergencia')),
+        matching: find.text('1 compra'),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('"Registrar otra compra" abre el formulario vacío', (
@@ -219,26 +266,103 @@ void main() {
     expect(find.text(MensajesUsuarios.sinPermisoTitulo), findsOneWidget);
   });
 
-  group('CA12: solo el administrador', () {
+  group('quién registra compras (HU-006 y HU-007)', () {
     final daniela = perfilDePrueba(nombres: 'Daniela', rol: Rol.auxiliarCocina);
+    final andres = perfilDePrueba(nombres: 'Andrés', rol: Rol.sinRol);
 
-    testWidgets('el auxiliar no ve "Compras"', (tester) async {
-      await abrirApp(tester, sesion: SesionFalsa(guardada: daniela));
+    testWidgets('HU-007, CA1: el auxiliar registra una compra de emergencia', (
+      tester,
+    ) async {
+      await abrirApp(
+        tester,
+        sesion: SesionFalsa(guardada: daniela),
+        compras: compras,
+        tamano: const Size(1080, 3000),
+      );
       expect(find.text('Compras'), findsNothing);
+
+      await tester.tap(find.text('Registrar compra'));
+      await tester.pumpAndSettle();
+      await llenarTomate(tester, tipo: 'Emergencia');
+      await tester.tap(_guardar);
+      await tester.pumpAndSettle();
+
+      expect(compras.enviados.single['tipo'], 'emergencia');
+      expect(find.text(MensajesCompras.compraGuardada), findsOneWidget);
+      // HU-007, CA5: consulta el tipo en el historial.
+      expect(find.text('Emergencia'), findsOneWidget);
+      // El resumen y el filtro son del administrador.
+      expect(find.text('Resumen de compras'), findsNothing);
+      expect(find.text('Todas'), findsNothing);
     });
 
     for (final ruta in [Rutas.compras, Rutas.historialCompras]) {
-      testWidgets('el auxiliar que llega a $ruta ve "No tienes permisos"', (
-        tester,
-      ) async {
-        await abrirApp(tester, sesion: SesionFalsa(guardada: daniela));
+      testWidgets(
+        'un usuario sin rol que llega a $ruta ve "No tienes permisos"',
+        (tester) async {
+          await abrirApp(tester, sesion: SesionFalsa(guardada: andres));
 
-        GoRouter.of(tester.element(find.byType(InicioPantalla))).go(ruta);
-        await tester.pumpAndSettle();
+          GoRouter.of(tester.element(find.byType(InicioPantalla))).go(ruta);
+          await tester.pumpAndSettle();
 
-        expect(find.text(MensajesUsuarios.sinPermisoTitulo), findsOneWidget);
-        expect(find.text('Guardar compra'), findsNothing);
-      });
+          expect(find.text(MensajesUsuarios.sinPermisoTitulo), findsOneWidget);
+          expect(find.text('Guardar compra'), findsNothing);
+        },
+      );
     }
+  });
+
+  group('HU-007, CA6: filtro y resumen del administrador', () {
+    Future<void> registrar(
+      WidgetTester tester, {
+      required bool emergencia,
+      required String precio,
+    }) async {
+      await llenarTomate(tester, tipo: emergencia ? 'Emergencia' : 'Planeada');
+      await tester.enterText(_texto('precio'), precio);
+      await tester.tap(_guardar);
+      await tester.pumpAndSettle();
+    }
+
+    Finder resumen(String tipo, String texto) => find.descendant(
+      of: find.byKey(Key('resumen-$tipo')),
+      matching: find.text(texto),
+    );
+
+    testWidgets('muestra cuántas compras y cuánto dinero de cada tipo', (
+      tester,
+    ) async {
+      await abrirCompras(tester);
+      await registrar(tester, emergencia: false, precio: '50000');
+      await tester.tap(find.text('Registrar otra compra'));
+      await tester.pumpAndSettle();
+      await registrar(tester, emergencia: true, precio: '20000');
+      await tester.tap(find.text('Registrar otra compra'));
+      await tester.pumpAndSettle();
+      await registrar(tester, emergencia: true, precio: '15000');
+
+      expect(find.text('Resumen de compras'), findsOneWidget);
+      expect(resumen('planeada', '1 compra'), findsOneWidget);
+      expect(resumen('planeada', r'$50.000'), findsOneWidget);
+      expect(resumen('emergencia', '2 compras'), findsOneWidget);
+      expect(resumen('emergencia', r'$35.000'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Emergencia'));
+      await tester.pumpAndSettle();
+      expect(find.text(r'Precio total: $50.000'), findsNothing);
+      expect(find.text(r'Precio total: $20.000'), findsOneWidget);
+      expect(find.text(r'Precio total: $15.000'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Planeadas'));
+      await tester.pumpAndSettle();
+      expect(find.text(r'Precio total: $50.000'), findsOneWidget);
+      expect(find.text(r'Precio total: $20.000'), findsNothing);
+
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Todas'));
+      await tester.pumpAndSettle();
+      // Vuelven a verse las de los dos tipos (la más reciente arriba).
+      expect(find.text(r'Precio total: $15.000'), findsOneWidget);
+      expect(find.text(r'Precio total: $20.000'), findsOneWidget);
+    });
   });
 }

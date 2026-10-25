@@ -7,7 +7,7 @@
 
 Yo como auxiliar de cocina quiero registrar las compras de insumos indicando producto, cantidad, unidad de medida y precio pagado para mantener un control detallado de las adquisiciones.
 
-> **Aclaración:** la historia dice "auxiliar de cocina", pero el CA1 y el CA12 dicen "administrador". Se decidió que **solo el administrador** registra compras, desde la opción "Compras".
+> **Aclaración (actualizada en HU-007):** la historia dice "auxiliar de cocina" y el CA1 y el CA12 dicen "administrador". Primero se decidió que solo el administrador registraba compras; con HU-007 se cambió: **el administrador y el auxiliar de cocina** registran compras. El administrador tiene más control (ver `docs/HU-007-compra-planeada-emergencia.md`).
 
 ## Criterios de aceptación
 
@@ -32,8 +32,8 @@ Yo como auxiliar de cocina quiero registrar las compras de insumos indicando pro
 
 ## Decisiones tomadas
 
-- **Quién:** solo el administrador (CA1, CA12). El servidor también lo exige.
-- **Tipo de compra:** el selector "Planeada / Emergencia" del prototipo se incluye, con "Planeada" por defecto. Servirá para la pérdida por compra de emergencia.
+- **Quién:** al principio solo el administrador; desde HU-007, el administrador y el auxiliar de cocina. El servidor exige un rol activo.
+- **Tipo de compra:** el selector "Planeada / Emergencia" del prototipo se incluye. Desde HU-007 ninguno viene marcado y es obligatorio. Servirá para la pérdida por compra de emergencia.
 - **Unidades:** cada insumo tiene su unidad. Si la compra viene en otra unidad del mismo tipo, se convierte antes de sumar: 1 kg = 1000 g, 1 lb = 453,592 g, 1 L = 1000 mL. Si no se puede convertir (por ejemplo, kilogramos a litros), se informa y no se guarda.
 - **Precio por unidad (CA9):** precio total ÷ cantidad, en la unidad en que se registró la compra.
 - **Estado del insumo (CA10):** si la nueva cantidad disponible es mayor que el nivel mínimo, el estado pasa a "Disponible"; si no, se deja como estaba.

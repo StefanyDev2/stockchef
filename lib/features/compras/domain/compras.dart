@@ -54,9 +54,9 @@ class Insumo {
 }
 
 /// Campos obligatorios del formulario (CA2).
-enum CampoCompra { insumo, cantidad, unidad, precio }
+enum CampoCompra { insumo, cantidad, unidad, precio, tipo }
 
-/// Lo que el administrador escribió en el formulario de compra.
+/// Lo que se escribió en el formulario de compra.
 class DatosCompra {
   const DatosCompra({
     this.insumoId,
@@ -64,7 +64,7 @@ class DatosCompra {
     this.unidad,
     this.proveedor = '',
     this.precio = '',
-    this.tipo = TipoCompra.planeada,
+    this.tipo,
   });
 
   final String? insumoId;
@@ -72,7 +72,9 @@ class DatosCompra {
   final UnidadMedida? unidad;
   final String proveedor;
   final String precio;
-  final TipoCompra tipo;
+
+  /// HU-007, CA3: obligatorio; no viene marcado.
+  final TipoCompra? tipo;
 
   /// CA5 y CA6: primero los campos pendientes; si no falta ninguno, que
   /// cantidad y precio sean números mayores a cero.
@@ -85,6 +87,7 @@ class DatosCompra {
       if (unidad == null) CampoCompra.unidad: MensajesCompras.campoObligatorio,
       if (precio.trim().isEmpty)
         CampoCompra.precio: MensajesCompras.campoObligatorio,
+      if (tipo == null) CampoCompra.tipo: MensajesCompras.campoObligatorio,
     };
     if (errores.isNotEmpty) {
       return ValidacionCompra(errores, MensajesCompras.camposPendientes);
@@ -109,7 +112,7 @@ class DatosCompra {
     'unidad': unidad!.valor,
     'proveedor': proveedor.trim().isEmpty ? null : proveedor.trim(),
     'precioTotal': leerPrecio(precio),
-    'tipo': tipo.name,
+    'tipo': tipo!.name,
   };
 }
 
@@ -223,7 +226,30 @@ final class CompraRechazada extends ResultadoCompra {
   final Set<CampoCompra> pendientes;
 }
 
-/// CA12: quien intentó guardar ya no es administrador activo.
+/// Quien intentó guardar ya no tiene un rol que pueda registrar compras.
 final class CompraSinPermiso extends ResultadoCompra {
   const CompraSinPermiso();
 }
+
+/// HU-007, CA6: compras de un tipo, o todas si `tipo` es `null`.
+List<Compra> filtrarCompras(List<Compra> compras, TipoCompra? tipo) =>
+    tipo == null ? compras : [...compras.where((c) => c.tipo == tipo)];
+
+/// Cuántas compras y cuánto dinero hay de un tipo.
+class ResumenTipo {
+  const ResumenTipo({required this.cantidad, required this.total});
+
+  final int cantidad;
+  final num total;
+}
+
+/// HU-007, CA6: resumen de planeadas y de emergencia.
+Map<TipoCompra, ResumenTipo> resumirPorTipo(List<Compra> compras) => {
+  for (final tipo in TipoCompra.values)
+    tipo: ResumenTipo(
+      cantidad: compras.where((c) => c.tipo == tipo).length,
+      total: compras
+          .where((c) => c.tipo == tipo)
+          .fold<num>(0, (suma, c) => suma + c.precioTotal),
+    ),
+};

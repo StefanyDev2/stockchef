@@ -14,7 +14,7 @@ class ComprasRepositorioFirebase implements ComprasRepositorio {
   static const _tiempoMaximo = Duration(seconds: 15);
 
   /// Últimas compras que se muestran en el historial.
-  static const _limiteHistorial = 30;
+  static const _limiteHistorial = 50;
 
   @override
   Stream<List<Insumo>> insumosActivos(String restaurantId) => _db
@@ -64,7 +64,7 @@ class ComprasRepositorioFirebase implements ComprasRepositorio {
       return CompraGuardada(
         Compra.desdeMapa(cuerpo['compraId'] as String? ?? '', {
           ...cuerpo,
-          'tipo': datos.tipo.name,
+          'tipo': datos.tipo!.name,
           'proveedor': datos.aEnvio()['proveedor'],
           'fecha': DateTime.now(),
         }),
