@@ -1,7 +1,7 @@
 # HU-006 · Registrar compra de insumos (CS02)
 
 **Prototipo:** `docs/prototipos/hu006/` (capturas del tablero de Miro)
-**Depende de:** HU-002 (inicio de sesión y pantalla de cada rol) y HU-003 (roles). Necesita insumos; mientras no exista la historia de insumos, se crean insumos de prueba (ver más abajo).
+**Depende de:** HU-002 (inicio de sesión y pantalla de cada rol) y HU-003 (roles). Necesita insumos; mientras no exista la historia de crear insumos, cada restaurante nuevo empieza con insumos de ejemplo (ver más abajo).
 
 ## Historia
 
@@ -56,7 +56,7 @@ Ambas colecciones van dentro del restaurante, para que las reglas de Firestore s
 | `estado` | string | `disponible`, `bajo` o `agotado` |
 | `activo` | boolean | Solo los activos salen en la lista (CA3) |
 
-Mientras no exista la historia de insumos, `npm run sembrar` crea insumos de prueba en "Sabor Casero".
+Mientras no exista la historia de crear insumos, `registrarUsuario` crea insumos de ejemplo al crear un restaurante nuevo (Tomate, Arroz, Pollo, Aceite, Huevos y Cebolla inactiva; están en `functions/src/insumosEjemplo.ts`). `npm run sembrar` se los agrega a los restaurantes que se crearon antes sin insumos.
 
 ### `restaurants/{restaurantId}/compras/{compraId}`
 

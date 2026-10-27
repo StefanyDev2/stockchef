@@ -103,7 +103,7 @@ npm run sembrar
 
 Todos usan la contraseña `Cocina12` y el restaurante "Sabor Casero". Solo existen en el emulador de tu computador: cada una tiene los suyos.
 
-También crea insumos de prueba para registrar compras: Tomate, Arroz y Pollo (en kilogramos), Aceite (litros) y Huevos (unidades). Tomate y Pollo vienen marcados como críticos. Cebolla queda inactiva y no aparece en la lista de compras. Si ya corriste el script antes, vuelve a correrlo: solo agrega lo que falta y no deshace los cambios que hayas hecho en la app.
+Cada restaurante nuevo empieza con insumos de ejemplo para poder registrar compras, también los que crees tú al registrarte con otro nombre de restaurante: Tomate, Arroz y Pollo (en kilogramos), Aceite (litros) y Huevos (unidades). Tomate y Pollo vienen marcados como críticos. Cebolla queda inactiva y no aparece en la lista de compras. Si creaste restaurantes antes de este cambio, corre `npm run sembrar` una vez: a los restaurantes sin insumos les agrega los de ejemplo, y no deshace los cambios que hayas hecho en la app.
 
 ### 7. Abre la app
 

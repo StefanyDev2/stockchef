@@ -6,6 +6,7 @@ import { getAuth, type Auth } from "firebase-admin/auth";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 import { HttpsError } from "firebase-functions/v2/https";
 
+import { INSUMOS_EJEMPLO } from "../../src/insumosEjemplo";
 import { MENSAJES } from "../../src/mensajes";
 import { registrarUsuario } from "../../src/registro";
 import { exigirEmuladores, limpiarEmuladores, PROYECTO } from "./entorno";
@@ -125,6 +126,29 @@ describe("registrarUsuario contra el emulador", () => {
 
     assert.equal(otro.rol, "administrador");
     assert.equal(await contar("restaurants"), 2);
+  });
+
+  it("HU-006: un restaurante nuevo empieza con los insumos de ejemplo", async () => {
+    const primero = await registrarUsuario(CAMILA, auth, db);
+    await registrarUsuario(ANDRES, auth, db);
+    const otro = await registrarUsuario({ ...ANDRES, correo: "otro@correo.com", restaurante: "La Peña" }, auth, db);
+
+    for (const { restaurantId } of [primero, otro]) {
+      const docs = (await db.collection(`restaurants/${restaurantId}/insumos`).get()).docs;
+      assert.deepEqual(
+        Object.fromEntries(docs.map((d) => [d.id, d.data()])),
+        Object.fromEntries(INSUMOS_EJEMPLO.map(({ id, ...datos }) => [id, datos])),
+        "el segundo del mismo restaurante no los duplica ni los cambia",
+      );
+    }
+  });
+
+  it("HU-006: los registros simultáneos crean los insumos una sola vez", async () => {
+    const resultados = await Promise.all(
+      [0, 1, 2].map((i) => registrarUsuario({ ...CAMILA, correo: `p${i}@correo.com` }, auth, db)),
+    );
+    const rid = resultados[0].restaurantId;
+    assert.equal(await contar(`restaurants/${rid}/insumos`), INSUMOS_EJEMPLO.length);
   });
 
   it("CA5: un correo ya registrado (sin importar mayúsculas) se rechaza", async () => {
