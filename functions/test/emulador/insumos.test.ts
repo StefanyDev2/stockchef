@@ -66,7 +66,12 @@ describe("guardarInsumosCriticos contra el emulador (HU-004)", () => {
     restaurantId = admin.restaurantId;
     daniela = (await registrar("Daniela")).uid;
     await asignarRol({ uid: daniela, rol: "auxiliar_cocina" }, camila, db);
-    otro = (await registrar("Otro", "La Peña")).uid;
+    const deOtro = await registrar("Otro", "La Peña");
+    otro = deOtro.uid;
+    // Se reemplazan los insumos de ejemplo del registro por unos conocidos.
+    for (const rid of [restaurantId, deOtro.restaurantId]) {
+      await db.recursiveDelete(db.collection(`restaurants/${rid}/insumos`));
+    }
     for (const [id, datos] of Object.entries({
       tomate: { critico: true },
       arroz: {},

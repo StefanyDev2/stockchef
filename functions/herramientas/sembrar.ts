@@ -5,8 +5,9 @@
  * Uso, con los emuladores encendidos (`npm run emuladores`):
  *   npm run sembrar
  *
- * Todos usan la contraseña Cocina12 y el restaurante "Sabor Casero". También
- * crea insumos de prueba (HU-006). Lo que ya existe no se toca.
+ * Todos usan la contraseña Cocina12 y el restaurante "Sabor Casero". Además,
+ * a cada restaurante sin insumos le agrega los insumos de ejemplo (HU-006).
+ * Lo que ya existe no se toca.
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -15,6 +16,7 @@ import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 
+import { crearInsumosEjemplo, INSUMOS_EJEMPLO } from "../src/insumosEjemplo";
 import { registrarUsuario } from "../src/registro";
 
 process.env.FIRESTORE_EMULATOR_HOST ??= "127.0.0.1:8080";
@@ -53,39 +55,17 @@ const USUARIOS: Prueba[] = [
   { nombres: "Pedro", apellidos: "Díaz", correo: "pedro@correo.com", rol: "auxiliar_cocina", activo: false },
 ];
 
-/** Insumos de prueba de "Sabor Casero" (HU-006). Tomate y Pollo son críticos (HU-004). */
-const INSUMOS: {
-  id: string;
-  nombre: string;
-  unidad: string;
-  cantidadDisponible: number;
-  nivelMinimo: number;
-  estado: string;
-  activo: boolean;
-  critico?: boolean;
-}[] = [
-  { id: "tomate", nombre: "Tomate", unidad: "kilogramo", cantidadDisponible: 5, nivelMinimo: 10, estado: "bajo", activo: true, critico: true },
-  { id: "arroz", nombre: "Arroz", unidad: "kilogramo", cantidadDisponible: 25, nivelMinimo: 10, estado: "disponible", activo: true },
-  { id: "pollo", nombre: "Pollo", unidad: "kilogramo", cantidadDisponible: 0, nivelMinimo: 5, estado: "agotado", activo: true, critico: true },
-  { id: "aceite", nombre: "Aceite", unidad: "litro", cantidadDisponible: 3, nivelMinimo: 2, estado: "disponible", activo: true },
-  { id: "huevos", nombre: "Huevos", unidad: "unidad", cantidadDisponible: 30, nivelMinimo: 60, estado: "bajo", activo: true },
-  { id: "cebolla", nombre: "Cebolla", unidad: "kilogramo", cantidadDisponible: 0, nivelMinimo: 3, estado: "agotado", activo: false },
-];
-
 async function main(): Promise<void> {
   initializeApp({ projectId: proyecto });
   const auth = getAuth();
   const db = getFirestore();
 
-  let restaurantId = "";
   for (const usuario of USUARIOS) {
     const existente = await auth
       .getUserByEmail(usuario.correo)
       .catch(() => undefined);
     if (existente) {
       // Ya existe: no se toca, para no deshacer los cambios hechos en la app.
-      restaurantId ||= (await db.doc(`users/${existente.uid}`).get()).data()
-        ?.restaurantId;
       console.log(`· ${usuario.correo.padEnd(20)} ya existía`);
       continue;
     }
@@ -94,7 +74,6 @@ async function main(): Promise<void> {
       auth,
       db,
     );
-    restaurantId ||= nuevo.restaurantId;
     // El rol de auxiliar y la desactivación se hacen en la app (HU-003);
     // aquí se fijan directamente para tener un usuario de cada caso.
     await db
@@ -106,23 +85,27 @@ async function main(): Promise<void> {
   }
   console.log(`\nContraseña de todos: ${CONTRASENA}\n`);
 
-  // HU-006: insumos de prueba mientras no exista la historia de insumos.
-  for (const insumo of INSUMOS) {
-    const ref = db.doc(`restaurants/${restaurantId}/insumos/${insumo.id}`);
-    const existente = await ref.get();
-    if (existente.exists) {
-      // HU-004: a los insumos creados antes se les agrega la clasificación.
-      if (existente.data()?.critico === undefined) {
-        await ref.update({ critico: insumo.critico === true });
-      }
-      console.log(`· insumo ${insumo.nombre.padEnd(12)} ya existía`);
+  // HU-006: todo restaurante sin insumos recibe los de ejemplo (también los
+  // creados antes de que el registro los agregara). A los que ya tienen
+  // insumos solo se les completa la clasificación de críticos (HU-004).
+  const restaurantes = await db.collection("restaurants").get();
+  for (const restaurante of restaurantes.docs) {
+    const nombre = String(restaurante.data().nombre ?? restaurante.id);
+    const insumos = await restaurante.ref.collection("insumos").get();
+    if (insumos.empty) {
+      await db.runTransaction(async (tx) => {
+        crearInsumosEjemplo(tx, restaurante.ref);
+      });
+      console.log(`✔ ${nombre}: se agregaron ${INSUMOS_EJEMPLO.length} insumos de ejemplo`);
       continue;
     }
-    const { id: _, ...datos } = insumo;
-    await ref.set({ critico: false, ...datos });
-    console.log(
-      `✔ insumo ${insumo.nombre.padEnd(12)} ${insumo.cantidadDisponible} ${insumo.unidad} (${insumo.activo ? insumo.estado : "inactivo"})`,
-    );
+    for (const doc of insumos.docs) {
+      if (doc.data().critico === undefined) {
+        const ejemplo = INSUMOS_EJEMPLO.find((i) => i.id === doc.id);
+        await doc.ref.update({ critico: ejemplo?.critico ?? false });
+      }
+    }
+    console.log(`· ${nombre}: ya tenía ${insumos.size} insumos`);
   }
 }
 

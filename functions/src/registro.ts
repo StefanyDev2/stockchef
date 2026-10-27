@@ -3,6 +3,7 @@ import { FieldValue, type Firestore } from "firebase-admin/firestore";
 import { HttpsError } from "firebase-functions/v2/https";
 
 import { MENSAJES } from "./mensajes";
+import { crearInsumosEjemplo } from "./insumosEjemplo";
 import { idRestaurante } from "./normalizacion";
 import { validarRegistro } from "./validaciones";
 
@@ -23,7 +24,7 @@ export interface ResultadoRegistro {
  *    responde `already-exists` (CA5).
  * 3. En una transacción crea el restaurante si no existe y el documento del
  *    usuario: administrador si creó el restaurante, sin rol si se unió a uno
- *    existente (CA10).
+ *    existente (CA10). Un restaurante nuevo empieza con insumos de ejemplo.
  * 4. Si la transacción falla, borra la cuenta recién creada para no dejar
  *    usuarios a medias.
  */
@@ -76,6 +77,9 @@ export async function registrarUsuario(
           creadoPor: uid,
           creadoEn: FieldValue.serverTimestamp(),
         });
+        // Mientras no exista la historia de crear insumos, el restaurante
+        // empieza con insumos de ejemplo para poder registrar compras.
+        crearInsumosEjemplo(tx, restauranteRef);
       }
 
       const rolAsignado: Rol = esNuevo ? "administrador" : null;
